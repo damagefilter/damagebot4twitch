@@ -63,5 +63,9 @@ namespace DamageBot.Events.Database {
             get;
             set;
         }
+
+        public SelectEvent() {
+            this.FieldList = new List<string>();
+        }
     }
 }

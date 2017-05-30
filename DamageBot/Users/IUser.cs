@@ -15,11 +15,12 @@ namespace DamageBot.Users {
         string Bio {
             get;
         }
-        
-        /// <summary>
-        /// Is this user a Sub?
-        /// </summary>
-        bool IsSub {
+
+        string TwitchId {
+            get;
+        }
+
+        string LocalId {
             get;
         }
 
@@ -42,6 +43,10 @@ namespace DamageBot.Users {
         /// The day this user has last visited the chat.
         /// </summary>
         DateTime DateLastVisited {
+            get;
+        }
+        
+        DateTime DateLastRemoteUpdate {
             get;
         }
     }

@@ -56,6 +56,7 @@ namespace DamageBot {
 
         private void OnJoinedChannel(object sender, OnUserJoinedArgs data) {
         }
+        
         private void OnMessageReceived(object sender, OnMessageReceivedArgs data) {
             
         }

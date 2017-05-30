@@ -8,16 +8,20 @@ namespace DamageBot.Users {
     /// </summary>
     public class ChatUser : IUser {
         private readonly DateTime timeConnected;
-        private readonly User internalUser;
-        
-        public string DisplayName => internalUser.DisplayName;
 
-        public string Bio => internalUser.Bio;
+        public string DisplayName {
+            get;
+            set;
+        }
+
+        public string Bio {
+            get;
+            set;
+        }
 
         public TimeSpan OnlineSince => DateTime.Now - timeConnected;
 
-        #region set externally by factory
-        public bool IsSub {
+        public string TwitchId {
             get;
             set;
         }
@@ -31,11 +35,19 @@ namespace DamageBot.Users {
             get;
             set;
         }
-        #endregion
+
+        public DateTime DateLastRemoteUpdate {
+            get;
+            set;
+        }
+
+        public string LocalId {
+            get;
+            set;
+        }
         
-        public ChatUser(User twitchUser) {
+        public ChatUser() {
             this.timeConnected = DateTime.Now;
-            this.internalUser = twitchUser;
         }
     }
 }
