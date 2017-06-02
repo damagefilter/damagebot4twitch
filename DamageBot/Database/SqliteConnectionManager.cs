@@ -1,5 +1,6 @@
 using System;
 using System.Data.Common;
+using System.Data.SQLite;
 using System.Linq;
 using DamageBot.Events.Database;
 using DamageBot.EventSystem;
@@ -20,13 +21,16 @@ namespace DamageBot.Database {
         public DbDataReader Read(string query) {
             var cmd = this.connection.CreateCommand();
             cmd.CommandText = query;
-            return cmd.ExecuteReader();
+            var reader = cmd.ExecuteReader();
+            cmd.Dispose();
+            return reader;
         }
 
-        public int Write(string query) {
-            var cmd = this.connection.CreateCommand();
-            cmd.CommandText = query;
-            return cmd.ExecuteNonQuery();
+        public int Write(DbCommand command) {
+            command.Connection = connection;
+            int rows = command.ExecuteNonQuery();
+            command.Dispose();
+            return rows;
         }
 
         public void Dispose() {
@@ -88,12 +92,18 @@ namespace DamageBot.Database {
             this.data = ev;
         }
 
-        public string Build() {
+        public DbCommand Build() {
             string fields = string.Join(",", data.DataList.Keys);
             // quote everything so nothing goes derpshit
-            string values = string.Join(",", data.DataList.Values.Select(c => $"'{c}'"));
-            
-            return $"insert into {data.TableName} ({fields}) values ({values})";
+            var command = new SQLiteCommand();
+            // prepare placeholders
+            string values = string.Join(",", data.DataList.Keys.Select(c => $"@{c}"));
+            command.CommandText = $"insert into {data.TableName} ({fields}) values ({values})";
+            // fill placeholders
+            foreach (var kvp in data.DataList) {
+                command.Parameters.AddWithValue($"@{kvp.Key}", kvp.Value);
+            }
+            return command;
         }
     }
     
@@ -104,12 +114,19 @@ namespace DamageBot.Database {
             this.data = ev;
         }
 
-        public string Build() {
+        public DbCommand Build() {
+            
             string fields = string.Join(",", data.DataList.Keys);
             // quote everything so nothing goes derpshit
-            string values = string.Join(",", data.DataList.Values.Select(c => $"'{c}'"));
-            
-            return $"insert into {data.TableName} ({fields}) values ({values}) where {data.WhereClause}";
+            var command = new SQLiteCommand();
+            // prepare placeholders
+            string values = string.Join(", ", data.DataList.Keys.Select(c => $"c = @{c}"));
+            command.CommandText = $"update {data.TableName} set {values} where {data.WhereClause}";
+            // fill placeholders
+            foreach (var kvp in data.DataList) {
+                command.Parameters.AddWithValue($"@{kvp.Key}", kvp.Value);
+            }
+            return command;
         }
     }
 }

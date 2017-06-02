@@ -45,6 +45,7 @@ namespace DamageBot {
         public void InitIrcCallbacks() {
             this.twitchIrcClient.OnUserJoined += OnJoinedChannel;
             this.twitchIrcClient.OnMessageReceived += OnMessageReceived;
+            this.twitchIrcClient.OnUserLeft += OnUserLeftChannel;
         }
 
         public void LoadPlugins() {
@@ -55,6 +56,10 @@ namespace DamageBot {
         }
 
         private void OnJoinedChannel(object sender, OnUserJoinedArgs data) {
+        }
+        
+        private void OnUserLeftChannel(object sender, OnUserLeftArgs data) {
+            
         }
         
         private void OnMessageReceived(object sender, OnMessageReceivedArgs data) {

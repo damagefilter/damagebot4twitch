@@ -9,13 +9,12 @@ namespace DamageBot.Events.Users {
             get;
         }
 
-        public Action<User> Setter {
+        public User ResolvedUser {
             get;
+            set;
         }
-
-        public RequestTwitchUserEvent(string name, Action<User> setterCallback) {
+        public RequestTwitchUserEvent(string name) {
             this.UserName = name;
-            this.Setter = setterCallback;
         }
     }
 }

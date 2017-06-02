@@ -2,52 +2,26 @@ using System;
 
 namespace DamageBot.Users {
     public interface IUser {
-        /// <summary>
-        /// This users name in a string
-        /// </summary>
-        string DisplayName {
+        int UserId {
             get;
         }
-
-        /// <summary>
-        /// Connected users bio.
-        /// </summary>
-        string Bio {
-            get;
-        }
-
+        
         string TwitchId {
             get;
         }
-
-        string LocalId {
-            get;
-        }
-
-        /// <summary>
-        /// Time connected.
-        /// </summary>
-        TimeSpan OnlineSince {
+        
+        string Username {
             get;
         }
         
-        /// <summary>
-        /// The day when this user first joined the chat.
-        /// (When the bot was also in the chat)
-        /// </summary>
-        DateTime DateJoinedFirst {
+        DateTime FirstJoined {
             get;
+            set;
         }
         
-        /// <summary>
-        /// The day this user has last visited the chat.
-        /// </summary>
-        DateTime DateLastVisited {
+        DateTime LastJoined {
             get;
-        }
-        
-        DateTime DateLastRemoteUpdate {
-            get;
+            set;
         }
     }
 }

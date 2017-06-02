@@ -71,8 +71,8 @@
     <Compile Include="Events\Database\SelectEvent.cs" />
     <Compile Include="Events\Database\UpdateEvent.cs" />
     <Compile Include="Events\Di\RequestDependencyEvent.cs" />
-    <Compile Include="Events\Users\RequestSubStatusEvent.cs" />
     <Compile Include="Events\Users\RequestTwitchUserEvent.cs" />
+    <Compile Include="Events\Users\RequestUserEvent.cs" />
     <Compile Include="Logging\Logger.cs" />
     <Compile Include="Logging\LogManager.cs" />
     <Compile Include="Plugins\PluginLoader.cs" />
@@ -82,10 +82,10 @@
     <Compile Include="Plugins\PluginState.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Users\ChatUser.cs" />
     <Compile Include="Users\IUser.cs" />
-    <Compile Include="Users\UserFactory.cs" />
-    <Compile Include="Users\UserManager.cs" />
+    <Compile Include="Users\SqliteUser.cs" />
+    <Compile Include="Users\SqlUserFactory.cs" />
+    <Compile Include="Users\TwitchUserApi.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

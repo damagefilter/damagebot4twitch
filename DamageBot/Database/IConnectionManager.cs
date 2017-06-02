@@ -14,8 +14,8 @@ namespace DamageBot.Database {
         /// Does a write-query.
         /// This can be an update, an insert or a schema change.
         /// </summary>
-        /// <param name="query"></param>
+        /// <param name="command"></param>
         /// <returns></returns>
-        int Write(string query);
+        int Write(DbCommand command);
     }
 }

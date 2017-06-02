@@ -1,6 +1,8 @@
+using System;
 using System.Collections.Generic;
 using System.Data.Common;
 using DamageBot.EventSystem;
+using Newtonsoft.Json;
 
 namespace DamageBot.Events.Database {
     /// <summary>
@@ -67,5 +69,55 @@ namespace DamageBot.Events.Database {
         public SelectEvent() {
             this.FieldList = new List<string>();
         }
+
+        /// <summary>
+        /// Advances internal pointer in result set. Reads next row.
+        /// Returns true if successful, false if no more rows or error.
+        /// </summary>
+        /// <returns></returns>
+        public bool ReadNext() {
+            return this.ResultSet.Read();
+        }
+        
+        /// <summary>
+        /// Get a string from the result sets current row
+        /// </summary>
+        /// <param name="fieldName"></param>
+        /// <returns></returns>
+        public string GetString(string fieldName) {
+            try {
+                return this.ResultSet.GetString(this.ResultSet.GetOrdinal(fieldName));
+            }
+            catch {
+                return null;
+            }
+        }
+        
+        public int GetInteger(string fieldName) {
+            try {
+                return this.ResultSet.GetInt32(this.ResultSet.GetOrdinal(fieldName));
+            }
+            catch {
+                return 0;
+            }
+        }
+        
+        public float GetFloat(string fieldName) {
+            try {
+                return this.ResultSet.GetFloat(this.ResultSet.GetOrdinal(fieldName));
+            }
+            catch {
+                return 0;
+            }
+        }
+        
+        public DateTime GetDateTime(string fieldName) {
+            try {
+                return this.ResultSet.GetDateTime(this.ResultSet.GetOrdinal(fieldName));
+            }
+            catch {
+                return DateTime.MinValue;
+            }
+        }
     }
-}
+} 
