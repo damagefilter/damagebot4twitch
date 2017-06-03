@@ -1,27 +1,39 @@
+using System;
 using DamageBot.Database;
 using DamageBot.Di;
 using DamageBot.Plugins;
 using TwitchLib;
 using TwitchLib.Events.Client;
+using TwitchLib.Models.Client;
 
 namespace DamageBot {
     public class DamageBot {
+        private BotConfig configuration;
+        
         private DependencyContainer diContainer;
         private PluginLoader pluginLoader;
-        private TwitchClient twitchIrcClient; 
+        private TwitchClient twitchIrcClient;
 
         /// <summary>
-        /// 
         /// </summary>
-        /// <param name="di">an empty dependncy injection container</param>
-        /// <param name="loader">a plugin loader instance</param>
-        /// <param name="twitchIrcClient">A primed and connected twitch client object</param>
-        public DamageBot(DependencyContainer di, PluginLoader loader, TwitchClient twitchIrcClient) {
-            this.diContainer = di;
-            this.pluginLoader = loader;
-            this.twitchIrcClient = twitchIrcClient;
+        /// <param name="config">the bot configuration</param>
+        public DamageBot(BotConfig config) {
+            this.configuration = config;
+            this.diContainer = new DependencyContainer();
+            this.pluginLoader = new PluginLoader();
         }
 
+        public void PrepareTwitch() {
+            var creds = new ConnectionCredentials(configuration.TwitchUsername, configuration.TwitchUserAuthKey);
+            this.twitchIrcClient = new TwitchClient(creds, configuration.Channel);
+            
+            TwitchAPI.Settings.ClientId = configuration.ApplicationClientId;
+            TwitchAPI.Settings.AccessToken = configuration.ApiAuthKey;
+            Console.WriteLine("Connecting to IRC");
+            this.twitchIrcClient.Connect();
+            Console.WriteLine("Connected? " + this.twitchIrcClient.IsConnected);
+            
+        }
         /// <summary>
         /// Sets the implementation for the bots database connection.
         /// Without it many features will likely fail a lot.
@@ -31,18 +43,9 @@ namespace DamageBot {
             this.diContainer.AddBinding(typeof(IConnectionManager), typeof(T));
         }
 
-        /// <summary>
-        /// Initialise the twitch API which is required for more detailed stuff
-        /// like getting proper user objects from names and such.
-        /// </summary>
-        /// <param name="clientId"></param>
-        /// <param name="authToken"></param>
-        public void InitTwitchApi(string clientId, string authToken) {
-            TwitchAPI.Settings.ClientId = clientId;
-            TwitchAPI.Settings.AccessToken = authToken;
-        }
-
         public void InitIrcCallbacks() {
+            this.twitchIrcClient.OnJoinedChannel += OnBotJoinedChannel;
+            
             this.twitchIrcClient.OnUserJoined += OnJoinedChannel;
             this.twitchIrcClient.OnMessageReceived += OnMessageReceived;
             this.twitchIrcClient.OnUserLeft += OnUserLeftChannel;
@@ -55,6 +58,9 @@ namespace DamageBot {
             this.pluginLoader.EnablePlugins(diContainer);
         }
 
+        private void OnBotJoinedChannel(object sender, OnJoinedChannelArgs agrs) {
+            this.twitchIrcClient.SendMessage("I am here! Therefore I am!");
+        }
         private void OnJoinedChannel(object sender, OnUserJoinedArgs data) {
         }
         
