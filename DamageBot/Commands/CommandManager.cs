@@ -6,14 +6,16 @@ using DamageBot.Logging;
 using Fasterflect;
 
 namespace DamageBot.Commands {
+
     /// <summary>
     /// This takes in any number of methods decorated with the CommandAttribute and
     /// creates a command tree from the information.
     /// In the end this is able to sort commands and sub commands.
     /// </summary>
     public class CommandManager {
-        private Dictionary<string, CommandContainer> commands = new Dictionary<string, CommandContainer>();
-        private Logger log;
+        private readonly Dictionary<string, CommandContainer> commands = new Dictionary<string, CommandContainer>();
+        private readonly List<FallbackCommandContainer> commandNotFoundHandlers = new List<FallbackCommandContainer>();
+        private readonly Logger log;
 
         public CommandManager() {
             log = LogManager.GetLogger(GetType());
@@ -31,7 +33,7 @@ namespace DamageBot.Commands {
         /// <returns></returns>
         public bool ParseCommand(IMessageReceiver caller, string command, string[] args) {
             if (!this.commands.ContainsKey(command)) {
-                return false;
+                return TryFallbackHandlers(caller, command, args);
             }
             CommandContainer baseCommand = this.commands[command];
             CommandContainer subCommand = null;
@@ -80,6 +82,15 @@ namespace DamageBot.Commands {
             return subCommand.ParseAndExecuteCommand(caller, args.Skip(argumentIndex).ToArray());
         }
 
+        private bool TryFallbackHandlers(IMessageReceiver caller, string command, string[] args) {
+            for (int i = 0; i < commandNotFoundHandlers.Count; ++i) {
+                if (commandNotFoundHandlers[i].ParseAndExecuteCommand(caller, command, args)) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         public void RegisterCommandsInObject(object listener, bool force) {
             var methods = listener.GetType().MethodsWith(Flags.InstancePublicDeclaredOnly, typeof(CommandAttribute));
             List<CommandContainer> newCommands = new List<CommandContainer>();
@@ -88,11 +99,20 @@ namespace DamageBot.Commands {
                 try {
                     // Throws on parameter mismatch
                     CommandAttribute attrib = methods[i].Attribute<CommandAttribute>();
-                    CommandDelegate del = (CommandDelegate)Delegate.CreateDelegate(typeof(CommandDelegate), listener, methods[i].Name);
-                    newCommands.Add(new CommandContainer(attrib, del));
+                    
+                    if (attrib.IsFallbackHandler) {
+                        FallbackCommandDelegate del = (FallbackCommandDelegate)Delegate.CreateDelegate(typeof(FallbackCommandDelegate), listener, methods[i].Name);
+                        commandNotFoundHandlers.Add(new FallbackCommandContainer(del));
+                    }
+                    else {
+                        CommandDelegate del = (CommandDelegate)Delegate.CreateDelegate(typeof(CommandDelegate), listener, methods[i].Name);
+                        newCommands.Add(new CommandContainer(attrib, del));
+                    }
+                    
                 }
                 catch {
-                    log.Error($"Cannot register command for method {methods[i].Name}. Command signature must be (IMessageReceiver, string[])");
+                    log.Error($"Cannot register command for method {methods[i].Name}. Command signature must be (IMessageReceiver, string[])\n"+
+                              "Also when registering fallback handlers make sure they return bool to indicate if they handled the command or not.");
                 }
             }
             // sort commands so that root commands come before their sub commands.

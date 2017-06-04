@@ -1,6 +1,7 @@
 using System;
 using System.Data.Common;
 using System.Data.SQLite;
+using System.IO;
 using System.Linq;
 using DamageBot.Events.Database;
 using DamageBot.EventSystem;
@@ -10,14 +11,52 @@ namespace DamageBot.Database {
     public class SqliteConnectionManager : IConnectionManager, IDisposable {
         private readonly DbConnection connection;
         private readonly Logger log;
-        public SqliteConnectionManager(DbConnection connection) {
+        
+        public SqliteConnectionManager() {
             this.log = LogManager.GetLogger(GetType());
-            this.connection = connection;
+            if (!File.Exists("damagebot.sqlite")) {
+                this.connection = new SQLiteConnection("Data Source=damagebot.sqlite;Version=3;");
+                this.connection.Open();
+                this.BuildSchema();
+            }
+            else {
+                this.connection = new SQLiteConnection("Data Source=damagebot.sqlite;Version=3;");
+                this.connection.Open();
+            }
+            
+            
             EventDispatcher.Instance.Register<SelectEvent>(OnSelectRequest);
             EventDispatcher.Instance.Register<InsertEvent>(OnInsertRequest);
             EventDispatcher.Instance.Register<UpdateEvent>(OnUpdateRequest);
         }
-        
+
+        private void BuildSchema() {
+            var cmd = this.connection.CreateCommand();
+
+            cmd.CommandText = @"
+CREATE TABLE users (
+  user_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  username VARCHAR(255) NOT NULL UNIQUE,
+  twitch_id VARCHAR(255) NOT NULL,
+  first_joined DATETIME NOT NULL,
+  last_joined DATETIME NOT NULL
+)";
+            cmd.ExecuteNonQuery();
+            
+            cmd.CommandText = @"
+CREATE TABLE plugins(
+  plugin_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  plugin_name VARCHAR(255) NOT NULL,
+  plugin_author VARCHAR(255) NOT NULL,
+  plugin_version VARCHAR(255) NOT NULL
+)";
+            cmd.ExecuteNonQuery();
+            
+            cmd.CommandText = @"
+CREATE INDEX author_version_idx ON plugins(plugin_name, plugin_author)";
+            cmd.ExecuteNonQuery();
+        }
+
         public DbDataReader Read(string query) {
             var cmd = this.connection.CreateCommand();
             cmd.CommandText = query;

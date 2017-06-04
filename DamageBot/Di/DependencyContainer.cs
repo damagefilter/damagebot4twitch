@@ -24,8 +24,12 @@ namespace DamageBot.Di {
         /// </summary>
         /// <param name="service"></param>
         /// <param name="target"></param>
-        public void AddBinding(Type service, Type target) {
-            this.containerBuilder.RegisterType(target).As(service);
+        /// <param name="singleInstance"></param>
+        public void AddBinding(Type service, Type target, bool singleInstance) {
+            var registration = this.containerBuilder.RegisterType(target).As(service);
+            if (singleInstance) {
+                registration.SingleInstance();
+            }
         }
 
         public ContainerBuilder GetImplementation() {

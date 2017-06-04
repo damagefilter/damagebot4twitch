@@ -16,7 +16,11 @@ namespace DamageBot {
             var bot = new DamageBot(cfg);
             bot.PrepareTwitch();
             bot.BindDatabaseImplementation<SqliteConnectionManager>();
-            bot.InitIrcCallbacks();
+            bot.InitCallbacks();
+            bot.InitDiContainer();
+            bot.PrepareDatabase();
+            bot.InitCommands();
+            bot.LoadPlugins();
 
             while (true) {
                 Thread.Sleep(3000);

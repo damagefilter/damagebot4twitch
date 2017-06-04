@@ -1,3 +1,5 @@
+using DamageBot.Users;
+
 namespace DamageBot.Commands {
     public interface IMessageReceiver {
 
@@ -9,11 +11,11 @@ namespace DamageBot.Commands {
         void Message(string message);
 
         /// <summary>
-        /// Returns true if at least one of the permissions are granted.
+        /// Returns true if this IMessageReceiver has at least the given elevation level.
         /// False otherwise
         /// </summary>
-        /// <param name="permissions"></param>
+        /// <param name="elevationLevel"></param>
         /// <returns></returns>
-        bool HasPermission(params string[] permissions);
+        bool HasPermission(Elevation elevationLevel);
     }
 }

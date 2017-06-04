@@ -1,7 +1,19 @@
 using System;
+using DamageBot.Users;
 
 namespace DamageBot.Commands {
     public class CommandAttribute : Attribute {
+        
+        /// <summary>
+        /// Is this command a "command not found" fallback handler?
+        /// If so it'll be stored in a separate list of commands that get queried
+        /// when no other registered command handler can resolve the requested command.
+        /// 
+        /// Fallback handlers need no aliases and are not parented so you can basically omit that.
+        /// 
+        /// </summary>
+        public bool IsFallbackHandler;
+        
         /// <summary>
         /// Ways to call this command.
         /// Example: say, talk, scream, speak for a command outputting some text somewhere
@@ -30,9 +42,9 @@ namespace DamageBot.Commands {
         public string[] HelpSearchTerms;
         
         /// <summary>
-        /// Optional list of permissions that are required to raise this command
+        /// At least this elevation level must be met to execute this command
         /// </summary>
-        public string[] Permissions;
+        public Elevation RequiredElevation;
 
         /// <summary>
         /// min amount of parameters.

@@ -36,6 +36,10 @@
     <Reference Include="Autofac, Version=4.6.0.0, Culture=neutral, PublicKeyToken=17863af14b0044da">
       <HintPath>..\packages\Autofac.4.6.0\lib\net45\Autofac.dll</HintPath>
     </Reference>
+    <Reference Include="Fasterflect, Version=2.1.3.0, Culture=neutral, PublicKeyToken=38d18473284c1ca7, processorArchitecture=MSIL">
+      <HintPath>..\packages\fasterflect.2.1.3\lib\net40\Fasterflect.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="Flurl, Version=2.3.0.0, Culture=neutral, PublicKeyToken=null">
       <HintPath>..\packages\Flurl.2.3.0\lib\portable40-net40+sl5+win8+wp8+wpa81\Flurl.dll</HintPath>
     </Reference>
@@ -70,6 +74,12 @@
   <ItemGroup>
     <Compile Include="AuthenticationHandler.cs" />
     <Compile Include="BotConfig.cs" />
+    <Compile Include="Commands\CommandAttribute.cs" />
+    <Compile Include="Commands\CommandContainer.cs" />
+    <Compile Include="Commands\CommandDependencyException.cs" />
+    <Compile Include="Commands\CommandManager.cs" />
+    <Compile Include="Commands\FallbackCommandContainer.cs" />
+    <Compile Include="Commands\IMessageReceiver.cs" />
     <Compile Include="DamageBot.cs" />
     <Compile Include="Database\IConnectionManager.cs" />
     <Compile Include="Database\SqliteConnectionManager.cs" />
@@ -78,6 +88,8 @@
     <Compile Include="EventSystem\EventDispatcher.cs" />
     <Compile Include="EventSystem\IEvent.cs" />
     <Compile Include="Events\Chat\MessageReceivedEvent.cs" />
+    <Compile Include="Events\Chat\RequestChannelMessageEvent.cs" />
+    <Compile Include="Events\Chat\RequestWhisperMessageEvent.cs" />
     <Compile Include="Events\Database\InsertEvent.cs" />
     <Compile Include="Events\Database\SelectEvent.cs" />
     <Compile Include="Events\Database\UpdateEvent.cs" />
@@ -94,6 +106,8 @@
     <Compile Include="Plugins\PluginState.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Users\ChatStatus.cs" />
+    <Compile Include="Users\Elevation.cs" />
     <Compile Include="Users\IUser.cs" />
     <Compile Include="Users\SqliteUser.cs" />
     <Compile Include="Users\SqlUserFactory.cs" />

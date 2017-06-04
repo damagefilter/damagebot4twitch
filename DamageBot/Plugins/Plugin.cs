@@ -7,7 +7,7 @@ namespace DamageBot.Plugins {
 
         /// <summary>
         /// In this step a plugin provides Resources to the Bots Di Container.
-        /// No instances are made his this is purely configurational.
+        /// Called before Enable
         /// </summary>
         /// <param name="diContainer"></param>
         public abstract void InitResources(DependencyContainer diContainer);
@@ -19,6 +19,22 @@ namespace DamageBot.Plugins {
         /// </summary>
         /// <param name="diContainer"></param>
         public abstract void Enable(DependencyContainer diContainer);
+
+        /// <summary>
+        /// Called from the plugin loader when a plugin is detected the first time ever.
+        /// Gives the plugin a chance to prepare resources such as tables in the database etc.
+        /// Called before InitResources
+        /// </summary>
+        public abstract void InstallRoutine();
+
+        /// <summary>
+        /// Called from the plugin loader when this plugin was installed already
+        /// but there's a version mismatch detected.
+        /// Gives the plugin a chance to update resources if necessary.
+        /// Called before InitResources
+        /// </summary>
+        /// <param name="installedVersion"></param>
+        public abstract void UpdateRoutine(string installedVersion);
 
         /// <summary>
         /// Get a suitable descriptor from this plugin which is then used

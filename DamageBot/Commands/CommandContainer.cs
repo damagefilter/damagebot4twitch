@@ -7,13 +7,11 @@ namespace DamageBot.Commands {
     public delegate void CommandDelegate(IMessageReceiver caller, string[] args);
 
     public class CommandContainer {
+        public CommandDelegate commandLogic;
+        
         public CommandAttribute MetaInfo {
             get;
-            private set;
         }
-
-        public CommandDelegate commandLogic;
-
 
         private readonly List<CommandContainer> subCommands;
 
