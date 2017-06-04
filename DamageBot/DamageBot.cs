@@ -3,8 +3,10 @@ using DamageBot.Commands;
 using DamageBot.Database;
 using DamageBot.Di;
 using DamageBot.Events.Chat;
+using DamageBot.Events.Users;
 using DamageBot.EventSystem;
 using DamageBot.Plugins;
+using DamageBot.Users;
 using TwitchLib;
 using TwitchLib.Events.Client;
 using TwitchLib.Models.Client;
@@ -16,6 +18,7 @@ namespace DamageBot {
         private DependencyContainer diContainer;
         private PluginLoader pluginLoader;
         private TwitchClient twitchIrcClient;
+        
         private CommandManager cmds;
 
         /// <summary>
@@ -26,6 +29,8 @@ namespace DamageBot {
             this.diContainer = new DependencyContainer();
             this.pluginLoader = new PluginLoader();
             this.diContainer.AddBinding(typeof(CommandManager), typeof(CommandManager), true);
+            this.diContainer.AddBinding(typeof(SqlUserFactory), typeof(SqlUserFactory), true);
+            this.diContainer.AddBinding(typeof(TwitchUserApi), typeof(TwitchUserApi), true);
         }
 
         public void PrepareTwitch() {
@@ -57,8 +62,9 @@ namespace DamageBot {
             diContainer.BuildAndCreateResolver();
         }
 
-        public void PrepareDatabase() {
+        public void PrepareSubsystems() {
             this.diContainer.Get<IConnectionManager>(); // This creates a new instance and consequently creates all the stuff with it
+            this.diContainer.Get<SqlUserFactory>(); // prepares the user factory. We speak to it via events, while the di container keeps a reference
         }
 
         public void InitCommands() {
@@ -95,7 +101,9 @@ namespace DamageBot {
             if (data.ChatMessage.Message.StartsWith("!")) {
                 return;
             }
-            this.twitchIrcClient.SendMessage($"{data.ChatMessage.DisplayName} send a message, yo.");
+            var r = new RequestUserEvent(data.ChatMessage.Username);
+            r.Call();
+            this.twitchIrcClient.SendMessage($"{data.ChatMessage.DisplayName} send a message. He has a user ID {r.ResolvedUser.TwitchId}");
         }
 
         private void OnChatCommand(object sender, OnChatCommandReceivedArgs data) {

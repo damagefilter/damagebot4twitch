@@ -9,7 +9,10 @@ namespace DamageBot.Users {
 
         private readonly Dictionary<string, IUser> userCache = new Dictionary<string, IUser>();
 
-        public SqlUserFactory() {
+        private readonly TwitchUserApi twitchApi;
+
+        public SqlUserFactory(TwitchUserApi api) {
+            this.twitchApi = api;
             EventDispatcher.Instance.Register<RequestUserEvent>(OnUserRequest);
         }
         
@@ -38,9 +41,8 @@ namespace DamageBot.Users {
                     FirstJoined = DateTime.UtcNow,
                     LastJoined = DateTime.UtcNow
                 };
-                var request = new RequestTwitchUserEvent(username);
-                request.Call();
-                user.TwitchId = request.ResolvedUser.Id;
+                var twitchUser = this.twitchApi.GetUserByName(username);
+                user.TwitchId = twitchUser.Id;
                 // Check if we have this user but with a different name.
                 select.TableList = "users";
                 select.FieldList.Add("*");
@@ -48,7 +50,6 @@ namespace DamageBot.Users {
                 select.Call();
                 // If we do, update this instance and send it back to database.
                 if (select.ReadNext()) {
-                    user.Username = select.GetString("username");
                     user.UserId = select.GetInteger("user_id");
                     user.FirstJoined = select.GetDateTime("first_joined");
                     user.LastJoined = select.GetDateTime("last_joined");
@@ -59,6 +60,21 @@ namespace DamageBot.Users {
                     update.WhereClause = $"twitch_id = '{user.TwitchId}'";
                     update.Call();
                 }
+                else {
+                    user.FirstJoined = DateTime.UtcNow;
+                    user.LastJoined = DateTime.UtcNow;
+                    user.Username = twitchUser.Name;
+                    user.TwitchId = twitchUser.Id;
+                    
+                    var insert = new InsertEvent();
+                    insert.TableName = "users";
+                    insert.DataList.Add("username", username);
+                    insert.DataList.Add("twitch_id", twitchUser.Id);
+                    insert.DataList.Add("last_joined", user.LastJoined);
+                    insert.DataList.Add("first_joined", user.FirstJoined);
+                    insert.Call();
+                }
+               
                 userCache.Add(username, user);
                 return user;
             }

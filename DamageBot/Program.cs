@@ -18,7 +18,7 @@ namespace DamageBot {
             bot.BindDatabaseImplementation<SqliteConnectionManager>();
             bot.InitCallbacks();
             bot.InitDiContainer();
-            bot.PrepareDatabase();
+            bot.PrepareSubsystems();
             bot.InitCommands();
             bot.LoadPlugins();
 

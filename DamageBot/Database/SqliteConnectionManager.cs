@@ -15,19 +15,22 @@ namespace DamageBot.Database {
         public SqliteConnectionManager() {
             this.log = LogManager.GetLogger(GetType());
             if (!File.Exists("damagebot.sqlite")) {
+                log.Info("Creating new database and connecting.");
                 this.connection = new SQLiteConnection("Data Source=damagebot.sqlite;Version=3;");
                 this.connection.Open();
                 this.BuildSchema();
             }
             else {
+                log.Info("Connecting to existing database.");
                 this.connection = new SQLiteConnection("Data Source=damagebot.sqlite;Version=3;");
                 this.connection.Open();
             }
             
-            
+            log.Info("Registering query request listeners");
             EventDispatcher.Instance.Register<SelectEvent>(OnSelectRequest);
             EventDispatcher.Instance.Register<InsertEvent>(OnInsertRequest);
             EventDispatcher.Instance.Register<UpdateEvent>(OnUpdateRequest);
+            log.Info("Creating new database.");
         }
 
         private void BuildSchema() {

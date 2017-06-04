@@ -68,6 +68,7 @@ namespace DamageBot.Events.Database {
 
         public SelectEvent() {
             this.FieldList = new List<string>();
+            this.OrderByList = new List<string>();
         }
 
         /// <summary>

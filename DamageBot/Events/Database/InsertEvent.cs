@@ -29,5 +29,9 @@ namespace DamageBot.Events.Database {
             get;
             set;
         }
+
+        public InsertEvent() {
+            DataList = new Dictionary<string, object>();
+        }
     }
 }
