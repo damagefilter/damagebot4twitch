@@ -113,7 +113,10 @@ CREATE INDEX author_version_idx ON plugins(plugin_name, plugin_author)";
         public string Build() {
             var fieldList = string.Join(",", data.FieldList);
             
-            var select = $"select {fieldList} from {data.TableList} where {data.WhereClause}";
+            var select = $"select {fieldList} from {data.TableList}";
+            if (!string.IsNullOrEmpty(data.WhereClause)) {
+                select += $" where {data.WhereClause}";
+            }
             if (data.OrderByList.Count > 0) {
                 select += $" order by {string.Join(",", data.OrderByList)}";
             }
