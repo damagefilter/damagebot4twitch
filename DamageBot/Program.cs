@@ -24,8 +24,7 @@ namespace DamageBot {
             bot.EnablePlugin();
             bot.Connect();
             while (bot.IsRunning) {
-                Thread.Sleep(3000);
-                Console.Write("... ");
+                Thread.Sleep(500);
             }
         }
 

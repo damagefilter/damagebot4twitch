@@ -4,6 +4,7 @@ using DamageBot.Commands;
 using DamageBot.Di;
 using DamageBot.Events.Chat;
 using DamageBot.Events.Database;
+using DamageBot.Logging;
 using DamageBot.Plugins;
 using DamageBot.Users;
 
@@ -41,7 +42,12 @@ namespace UserCommands {
     }
 
     public class Command {
-        
+
+        private Logger log;
+
+        public Command() {
+            log = LogManager.GetLogger(GetType());
+        }
         /// <summary>
         /// This here acts as a fallback command resolver which effectively allows us
         /// to raise unknown commands (as defined per users)
@@ -62,6 +68,7 @@ namespace UserCommands {
             select.WhereClause = $"alias = '{command}'";
             select.Call();
             if (select.ReadNext()) {
+                log.Info("Resolved command " + command);
                 new RequestChannelMessageEvent(caller.Status.Channel, select.GetString("response")).Call();
                 return true;
             }
@@ -83,9 +90,11 @@ namespace UserCommands {
                 insert.DataList.Add("response", string.Join(" ", args.Skip(1)));
                 insert.Call();
                 caller.Message($"Command {args[0]} has been added.");
+                log.Info("Added command " + args[0]);
             }
             catch (Exception e) {
                 caller.Message($"Command {args[0]} has not been added. Reason: {e.Message}.");
+                log.Error("Not added command " + args[0], e);
             }
         }
         
@@ -103,9 +112,11 @@ namespace UserCommands {
                 delete.WhereClause = $"alias = '{args[0]}'";
                 delete.Call();
                 caller.Message($"Command {args[0]} has not been removed.");
+                log.Info("Removed command " + args[0]);
             }
             catch (Exception e) {
                 caller.Message($"Command {args[0]} has not been removed. Reason: {e.Message}.");
+                log.Error("Not removed command " + args[0], e);
             }
         }
     }
