@@ -17,12 +17,13 @@ namespace DamageBot {
             bot.PrepareTwitch();
             bot.BindDatabaseImplementation<SqliteConnectionManager>();
             bot.InitCallbacks();
-            bot.InitDiContainer();
-            bot.PrepareSubsystems();
-            bot.InitCommands();
             bot.LoadPlugins();
-
-            while (true) {
+            bot.BuildDiContainerAndResolver();
+            bot.EnsureSubsystems();
+            bot.EnsureCommands();
+            bot.EnablePlugin();
+            bot.Connect();
+            while (bot.IsRunning) {
                 Thread.Sleep(3000);
                 Console.Write("... ");
             }

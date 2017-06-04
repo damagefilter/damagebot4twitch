@@ -17,5 +17,12 @@ namespace DamageBot.Commands {
         /// <param name="elevationLevel"></param>
         /// <returns></returns>
         bool HasPermission(Elevation elevationLevel);
+
+        /// <summary>
+        /// Chat status of this message receiver
+        /// </summary>
+        ChatStatus Status {
+            get;
+        }
     }
 }

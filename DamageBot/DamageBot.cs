@@ -5,6 +5,7 @@ using DamageBot.Di;
 using DamageBot.Events.Chat;
 using DamageBot.Events.Users;
 using DamageBot.EventSystem;
+using DamageBot.Logging;
 using DamageBot.Plugins;
 using DamageBot.Users;
 using TwitchLib;
@@ -21,10 +22,15 @@ namespace DamageBot {
         
         private CommandManager cmds;
 
+        private readonly Logger log;
+
+        public bool IsRunning => twitchIrcClient.IsConnected;
+
         /// <summary>
         /// </summary>
         /// <param name="config">the bot configuration</param>
         public DamageBot(BotConfig config) {
+            log = LogManager.GetLogger(GetType());
             this.configuration = config;
             this.diContainer = new DependencyContainer();
             this.pluginLoader = new PluginLoader();
@@ -34,15 +40,25 @@ namespace DamageBot {
         }
 
         public void PrepareTwitch() {
+            log.Info("Setting up channel user");
             var creds = new ConnectionCredentials(configuration.TwitchUsername, configuration.TwitchUserAuthKey);
             this.twitchIrcClient = new TwitchClient(creds, configuration.Channel);
             
+            log.Info("Preparing API Access.");
             TwitchAPI.Settings.ClientId = configuration.ApplicationClientId;
             TwitchAPI.Settings.AccessToken = configuration.ApiAuthKey;
-            Console.WriteLine("Connecting to IRC");
-            this.twitchIrcClient.Connect();
-            Console.WriteLine("Connected? " + this.twitchIrcClient.IsConnected);
             
+        }
+
+        public void Connect() {
+            log.Info("Connecting to IRC");
+            this.twitchIrcClient.Connect();
+            log.Info("Connected? " + this.twitchIrcClient.IsConnected);
+        }
+
+        public void Disconnect() {
+            log.Info("Disconnecting bot.");
+            this.twitchIrcClient.Disconnect();
         }
         
         public void InitCallbacks() {
@@ -58,16 +74,16 @@ namespace DamageBot {
             EventDispatcher.Instance.Register<RequestWhisperMessageEvent>(OnWhisperMessageRequest);
         }
 
-        public void InitDiContainer() {
+        public void BuildDiContainerAndResolver() {
             diContainer.BuildAndCreateResolver();
         }
 
-        public void PrepareSubsystems() {
+        public void EnsureSubsystems() {
             this.diContainer.Get<IConnectionManager>(); // This creates a new instance and consequently creates all the stuff with it
             this.diContainer.Get<SqlUserFactory>(); // prepares the user factory. We speak to it via events, while the di container keeps a reference
         }
 
-        public void InitCommands() {
+        public void EnsureCommands() {
             this.cmds = this.diContainer.Get<CommandManager>();
         }
         
@@ -83,6 +99,10 @@ namespace DamageBot {
         public void LoadPlugins() {
             this.pluginLoader.LoadPlugins();
             this.pluginLoader.InitialisePluginResources(diContainer);
+        }
+
+        public void EnablePlugin() {
+            this.pluginLoader.EnsureInstallations();
             this.pluginLoader.EnablePlugins(diContainer);
         }
 
@@ -101,13 +121,24 @@ namespace DamageBot {
             if (data.ChatMessage.Message.StartsWith("!")) {
                 return;
             }
-            var r = new RequestUserEvent(data.ChatMessage.Username);
-            r.Call();
-            this.twitchIrcClient.SendMessage($"{data.ChatMessage.DisplayName} send a message. He has a user ID {r.ResolvedUser.TwitchId}");
+            var user = GetUser(data.ChatMessage);
+            if (user == null) {
+                return;
+            }
+            new MessageReceivedEvent(data.ChatMessage.Channel, data.ChatMessage.Message, user).Call();
         }
 
         private void OnChatCommand(object sender, OnChatCommandReceivedArgs data) {
-            this.twitchIrcClient.SendMessage($"{data.Command.Command} chat command received.");
+            var user = GetUser(data.Command.ChatMessage);
+            if (user == null) {
+                return;
+            }
+            try {
+                cmds.ParseCommand(user, data.Command.Command, data.Command.ArgumentsAsList.ToArray());
+            }
+            catch (Exception e) {
+                user.Message("Command failed: " + e.Message);
+            }
         }
         
         private void OnWhisperCommand(object sender, OnWhisperCommandReceivedArgs data) {
@@ -115,11 +146,30 @@ namespace DamageBot {
         }
 
         private void OnChannelMessageRequest(RequestChannelMessageEvent ev) {
-            this.twitchIrcClient.SendMessage(ev.Channel, ev.Message);
+            this.twitchIrcClient.SendMessage(ev.Channel ?? twitchIrcClient.JoinedChannels[0].Channel, ev.Message);
         }
         
         private void OnWhisperMessageRequest(RequestWhisperMessageEvent ev) {
             this.twitchIrcClient.SendWhisper(ev.User.Username, ev.Message);
+        }
+
+        private IUser GetUser(ChatMessage msg) {
+            var r = new RequestUserEvent(msg.Username);
+            r.Call();
+            var user = r.ResolvedUser;
+            if (user == null) {
+                log.Warn("Unable to resolve user " + msg.Username);
+                return null;
+            }
+            var elevation = Elevation.Viewer;
+            if (msg.IsBroadcaster) {
+                elevation = Elevation.Broadcaster;
+            }
+            if (msg.IsModerator) {
+                elevation = Elevation.Moderator;
+            }
+            user.Status = new ChatStatus(elevation, msg.Channel, msg.IsSubscriber);
+            return user;
         }
     }
 }

@@ -30,9 +30,12 @@ namespace DamageBot.Database {
             EventDispatcher.Instance.Register<SelectEvent>(OnSelectRequest);
             EventDispatcher.Instance.Register<InsertEvent>(OnInsertRequest);
             EventDispatcher.Instance.Register<UpdateEvent>(OnUpdateRequest);
+            EventDispatcher.Instance.Register<CreateTableEvent>(OnCreateTableRequest);
+            EventDispatcher.Instance.Register<DeleteEvent>(OnDeleteRequest);
             log.Info("Creating new database.");
         }
 
+        // TODO Move this into some external initialisation step
         private void BuildSchema() {
             var cmd = this.connection.CreateCommand();
 
@@ -82,9 +85,12 @@ CREATE INDEX author_version_idx ON plugins(plugin_name, plugin_author)";
             catch {
                 log.Warn("Tried to dispose already disposed database connection.");
             }
+            log.Info("Disposing connection manager");
             EventDispatcher.Instance.Unregister<SelectEvent>(OnSelectRequest);
             EventDispatcher.Instance.Unregister<InsertEvent>(OnInsertRequest);
             EventDispatcher.Instance.Unregister<UpdateEvent>(OnUpdateRequest);
+            EventDispatcher.Instance.Unregister<CreateTableEvent>(OnCreateTableRequest);
+            EventDispatcher.Instance.Unregister<DeleteEvent>(OnDeleteRequest);
         }
 
         private void OnSelectRequest(SelectEvent ev) {
@@ -100,6 +106,17 @@ CREATE INDEX author_version_idx ON plugins(plugin_name, plugin_author)";
         private void OnUpdateRequest(UpdateEvent ev) {
             var b = new SqliteUpdateQueryBuilder(ev);
             ev.AffectedRows = this.Write(b.Build());
+        }
+        
+        private void OnCreateTableRequest(CreateTableEvent ev) {
+            log.Info("create table request");
+            var b = new SqliteCreateTableQueryBuilder(ev);
+            this.Write(b.Build());
+        }
+        
+        private void OnDeleteRequest(DeleteEvent ev) {
+            var b = new SqliteDeleteQueryBuilder(ev);
+            this.Write(b.Build());
         }
     }
 
@@ -160,8 +177,6 @@ CREATE INDEX author_version_idx ON plugins(plugin_name, plugin_author)";
         }
 
         public DbCommand Build() {
-            
-            string fields = string.Join(",", data.DataList.Keys);
             // quote everything so nothing goes derpshit
             var command = new SQLiteCommand();
             // prepare placeholders
@@ -171,6 +186,44 @@ CREATE INDEX author_version_idx ON plugins(plugin_name, plugin_author)";
             foreach (var kvp in data.DataList) {
                 command.Parameters.AddWithValue($"@{kvp.Key}", kvp.Value);
             }
+            return command;
+        }
+    }
+    
+    internal class SqliteCreateTableQueryBuilder {
+        
+        private CreateTableEvent data;
+
+        public SqliteCreateTableQueryBuilder(CreateTableEvent ev) {
+            this.data = ev;
+        }
+
+        public DbCommand Build() {
+            
+            string fields = string.Join(",", data.FieldDefinitions);
+            // quote everything so nothing goes derpshit
+            var command = new SQLiteCommand();
+            // prepare placeholders
+            command.CommandText = $"create table {data.TableName} ({fields});";
+            if (!string.IsNullOrEmpty(data.IndexName) && !string.IsNullOrEmpty(data.IndexFieldList)) {
+                command.CommandText += $"create index {data.IndexName} on {data.TableName}({data.IndexFieldList});";
+            }
+            return command;
+        }
+    }
+    
+    internal class SqliteDeleteQueryBuilder {
+        private DeleteEvent data;
+
+        public SqliteDeleteQueryBuilder(DeleteEvent ev) {
+            this.data = ev;
+        }
+
+        public DbCommand Build() {
+            // quote everything so nothing goes derpshit
+            var command = new SQLiteCommand();
+            // prepare placeholders
+            command.CommandText = $"delete from {data.TableName} where {data.WhereClause}";
             return command;
         }
     }

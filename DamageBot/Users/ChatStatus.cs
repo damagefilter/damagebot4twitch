@@ -23,9 +23,15 @@ namespace DamageBot.Users {
             set;
         }
 
-        public ChatStatus(Elevation el, bool isSub) {
+        public string Channel {
+            get;
+            set;
+        }
+
+        public ChatStatus(Elevation el, string channel, bool isSub) {
             this.UserElevation = el;
             this.IsSubscriber = isSub;
+            this.Channel = channel;
         }
     }
 }

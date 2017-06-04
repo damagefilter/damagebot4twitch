@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Reflection;
 using DamageBot.Di;
+using DamageBot.Events.Database;
 using DamageBot.Logging;
 
 namespace DamageBot.Plugins {
@@ -46,7 +47,7 @@ namespace DamageBot.Plugins {
             }
             
             foreach (var file in Directory.EnumerateFiles(pluginPath, "*.dll")) {
-                log.Info(string.Format("Attempting to load module dll from {0}", file));
+                log.Info(string.Format("Attempting to load plugin dll from {0}", file));
                 // load the dll
                 var dll = Assembly.LoadFrom(file);
 
@@ -55,7 +56,6 @@ namespace DamageBot.Plugins {
                 Type pluginType = typeof(Plugin);
                 foreach (var cls in dll.GetTypes()) {
                     if (pluginType.IsAssignableFrom(cls) && !cls.IsAbstract && !cls.IsInterface) {
-                        log.Info(string.Format("Found a module class: {0}", cls));
                         pluginTypes.Add(cls);
                     }
                 }
@@ -76,13 +76,52 @@ namespace DamageBot.Plugins {
         public void InitialisePluginResources(DependencyContainer di) {
             log.Info("Initialising plugin resources...");
             foreach (var plugin in plugins) {
+                log.Info("Initialising " + plugin.GetDescriptor().Name);
                 plugin.InitResources(di);
             }
+        }
+
+        public void EnsureInstallations() {
+            foreach (Plugin plugin in plugins) {
+                var descriptor = plugin.GetDescriptor();
+                var select = new SelectEvent();
+                select.TableList = "plugins";
+                select.FieldList.Add("plugin_version");
+                select.FieldList.Add("plugin_id");
+                select.WhereClause = $"plugin_name = '{descriptor.Name}'";
+                select.Call();
+                if (select.ReadNext()) {
+                    string version = select.GetString("plugin_version");
+                    if (version != descriptor.Version) {
+                        plugin.UpdateRoutine(version);
+                        var update = new UpdateEvent();
+                        update.TableName = "plugins";
+                        update.DataList.Add("plugin_version", descriptor.Version);
+                        update.WhereClause = $"plugin_id = '{select.GetInteger("plugin_id")}'";
+                        update.Call();
+                    }
+                }
+                else {
+                    plugin.InstallRoutine();
+                    var insert = new InsertEvent();
+                    insert.TableName = "plugins";
+                    insert.DataList.Add("plugin_name", descriptor.Name);
+                    insert.DataList.Add("plugin_author", descriptor.Author);
+                    insert.DataList.Add("plugin_version", descriptor.Version);
+                    insert.Call();
+                }
+            }
+           
+        }
+
+        public void EnsureUpdates() {
+            
         }
 
         public void EnablePlugins(DependencyContainer di) {
             log.Info("Enabling plugins ...");
             foreach (var plugin in plugins) {
+                log.Info("Enabling " + plugin.GetDescriptor().Name);
                 plugin.Enable(di);
             }
         }

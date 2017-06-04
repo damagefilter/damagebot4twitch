@@ -90,6 +90,8 @@
     <Compile Include="Events\Chat\MessageReceivedEvent.cs" />
     <Compile Include="Events\Chat\RequestChannelMessageEvent.cs" />
     <Compile Include="Events\Chat\RequestWhisperMessageEvent.cs" />
+    <Compile Include="Events\Database\CreateTableEvent.cs" />
+    <Compile Include="Events\Database\DeleteEvent.cs" />
     <Compile Include="Events\Database\InsertEvent.cs" />
     <Compile Include="Events\Database\SelectEvent.cs" />
     <Compile Include="Events\Database\UpdateEvent.cs" />

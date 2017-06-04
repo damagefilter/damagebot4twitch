@@ -77,6 +77,9 @@ namespace DamageBot.Events.Database {
         /// </summary>
         /// <returns></returns>
         public bool ReadNext() {
+            if (this.ResultSet == null) {
+                return false;
+            }
             return this.ResultSet.Read();
         }
         
