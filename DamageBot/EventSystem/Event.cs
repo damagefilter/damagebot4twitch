@@ -5,9 +5,8 @@
         /// <summary>
         /// Call this this hook on the EventDispatcher.
         /// </summary>
-        public Event<TImplementor> Call() {
+        public void Call() {
             EventDispatcher.Instance.Call<TImplementor>(this);
-            return this;
         }
     }
 }
