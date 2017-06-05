@@ -11,7 +11,7 @@ using Flurl.Http;
 using Newtonsoft.Json;
 
 namespace DamageBot {
-    class AuthenticationHandler {
+    public class AuthenticationHandler {
         private SimpleHttpServer srv;
         private BotConfig cfg;
 

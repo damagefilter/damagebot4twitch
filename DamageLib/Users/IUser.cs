@@ -29,7 +29,7 @@ namespace DamageBot.Users {
         /// The status of this user during this message cycle.
         /// You CAN set a new one but it will be overridden immediately with the next request.
         /// </summary>
-        ChatStatus Status {
+        new ChatStatus Status {
             get;
             set;
         }

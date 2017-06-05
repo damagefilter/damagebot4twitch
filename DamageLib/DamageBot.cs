@@ -75,7 +75,7 @@ namespace DamageBot {
             this.twitchIrcClient.OnChatCommandReceived += OnChatCommand;
             this.twitchIrcClient.OnWhisperCommandReceived += OnWhisperCommand;
             this.twitchIrcClient.OnUserLeft += OnUserLeftChannel;
-            
+
             EventDispatcher.Instance.Register<RequestChannelMessageEvent>(OnChannelMessageRequest);
             EventDispatcher.Instance.Register<RequestWhisperMessageEvent>(OnWhisperMessageRequest);
         }
@@ -157,6 +157,7 @@ namespace DamageBot {
             this.twitchIrcClient.SendMessage($"{data.Command} whisper command received.");
         }
 
+
         private void OnChannelMessageRequest(RequestChannelMessageEvent ev) {
             this.twitchIrcClient.SendMessage(ev.Channel ?? twitchIrcClient.JoinedChannels[0].Channel, ev.Message);
         }
@@ -164,6 +165,8 @@ namespace DamageBot {
         private void OnWhisperMessageRequest(RequestWhisperMessageEvent ev) {
             this.twitchIrcClient.SendWhisper(ev.User.Username, ev.Message);
         }
+
+        
 
         private IUser GetUser(ChatMessage msg) {
             var r = new RequestUserEvent(msg.Username);

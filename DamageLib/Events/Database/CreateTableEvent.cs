@@ -23,8 +23,6 @@ namespace DamageBot.Events.Database {
             get;
             set;
         }
-        
-        // TODO: Support foreign keys
 
         public CreateTableEvent() {
             FieldDefinitions = new List<string>();
