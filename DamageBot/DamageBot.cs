@@ -7,6 +7,7 @@ using DamageBot.Events.Users;
 using DamageBot.EventSystem;
 using DamageBot.Logging;
 using DamageBot.Plugins;
+using DamageBot.Tasking;
 using DamageBot.Users;
 using TwitchLib;
 using TwitchLib.Events.Client;
@@ -19,6 +20,7 @@ namespace DamageBot {
         private DependencyContainer diContainer;
         private PluginLoader pluginLoader;
         private TwitchClient twitchIrcClient;
+        private TaskQueue tasks;
         
         private CommandManager cmds;
 
@@ -34,6 +36,7 @@ namespace DamageBot {
             this.configuration = config;
             this.diContainer = new DependencyContainer();
             this.pluginLoader = new PluginLoader();
+            this.tasks = new TaskQueue();
             this.diContainer.AddBinding(typeof(CommandManager), typeof(CommandManager), true);
             this.diContainer.AddBinding(typeof(SqlUserFactory), typeof(SqlUserFactory), true);
             this.diContainer.AddBinding(typeof(TwitchUserApi), typeof(TwitchUserApi), true);
@@ -54,6 +57,9 @@ namespace DamageBot {
             log.Info("Connecting to IRC");
             this.twitchIrcClient.Connect();
             log.Info("Connected? " + this.twitchIrcClient.IsConnected);
+            
+            this.tasks.StartPolling();
+            log.Info("Ready. Lets roll.");
         }
 
         public void Disconnect() {
@@ -121,24 +127,30 @@ namespace DamageBot {
             if (data.ChatMessage.Message.StartsWith("!")) {
                 return;
             }
-            var user = GetUser(data.ChatMessage);
-            if (user == null) {
-                return;
-            }
-            new MessageReceivedEvent(data.ChatMessage.Channel, data.ChatMessage.Message, user).Call();
+            tasks.Add(() => {
+                var user = GetUser(data.ChatMessage);
+                if (user == null) {
+                    return;
+                }
+                new MessageReceivedEvent(data.ChatMessage.Channel, data.ChatMessage.Message, user).Call();
+            });
+            
         }
 
         private void OnChatCommand(object sender, OnChatCommandReceivedArgs data) {
-            var user = GetUser(data.Command.ChatMessage);
-            if (user == null) {
-                return;
-            }
-            try {
-                cmds.ParseCommand(user, data.Command.Command, data.Command.ArgumentsAsList.ToArray());
-            }
-            catch (Exception e) {
-                user.Message("Command failed: " + e.Message);
-            }
+            tasks.Add(() => {
+                var user = GetUser(data.Command.ChatMessage);
+                if (user == null) {
+                    return;
+                }
+                try {
+                    cmds.ParseCommand(user, data.Command.Command, data.Command.ArgumentsAsList.ToArray());
+                }
+                catch (Exception e) {
+                    user.Message("Command failed: " + e.Message);
+                    log.Error("Command failed: " + e.Message, e);
+                }
+            });
         }
         
         private void OnWhisperCommand(object sender, OnWhisperCommandReceivedArgs data) {

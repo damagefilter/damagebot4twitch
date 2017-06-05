@@ -108,6 +108,8 @@
     <Compile Include="Plugins\PluginState.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tasking\Executable.cs" />
+    <Compile Include="Tasking\TaskQueue.cs" />
     <Compile Include="Users\ChatStatus.cs" />
     <Compile Include="Users\Elevation.cs" />
     <Compile Include="Users\IUser.cs" />
