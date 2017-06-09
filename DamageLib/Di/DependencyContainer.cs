@@ -31,6 +31,18 @@ namespace DamageBot.Di {
                 registration.SingleInstance();
             }
         }
+        
+        /// <summary>
+        /// Simple binding without interface or service mumbojumbo
+        /// </summary>
+        /// <param name="target"></param>
+        /// <param name="singleInstance"></param>
+        public void AddBinding(Type target, bool singleInstance) {
+            var registration = this.containerBuilder.RegisterType(target).AsSelf();
+            if (singleInstance) {
+                registration.SingleInstance();
+            }
+        }
 
         public ContainerBuilder GetImplementation() {
             return this.containerBuilder;
