@@ -7,14 +7,14 @@ using DamageBot.Users;
 
 namespace Statistics {
     public class StatisticsPlugin : Plugin {
-        private UserStatsRecorder userStatsRecorder;
         
         public override void InitResources(DependencyContainer diContainer) {
             diContainer.AddBinding(typeof(UserStatsRecorder), true);
         }
 
         public override void Enable(DependencyContainer diContainer) {
-            this.userStatsRecorder = diContainer.Get<UserStatsRecorder>();
+            var userStatsRecorder = diContainer.Get<UserStatsRecorder>();
+            diContainer.Get<CommandManager>().RegisterCommandsInObject(new ControlCommands(userStatsRecorder), false);
         }
 
         public override void InstallRoutine() {
@@ -75,7 +75,7 @@ namespace Statistics {
             RequiredElevation = Elevation.Broadcaster
         )]
         public void StopStreamCommand(IMessageReceiver caller,  string[] args) {
-            userRecorder.StartRecording();
+            userRecorder.StopRecording();
         }
     }
 }
