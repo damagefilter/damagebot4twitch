@@ -43,6 +43,10 @@ namespace DamageBot.Commands {
         /// <param name="args"></param>
         /// <returns></returns>
         public bool ParseAndExecuteCommand(IMessageReceiver caller, string[] args) {
+            if (!caller.HasPermission(this.MetaInfo.RequiredElevation)) {
+                caller.Message($"You do not have the required elevation level to execute the command {MetaInfo.Aliases[0]}");
+                return false;
+            }
             if (args.Length < MetaInfo.MinParams || ((args.Length > MetaInfo.MaxParams) && (MetaInfo.MaxParams != 0))) {
                 OnBadSyntax(caller, args);
                 return false;
