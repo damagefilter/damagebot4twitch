@@ -42,6 +42,9 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StatisticsPlugin.cs" />
+    <Compile Include="StreamStatEntry.cs" />
+    <Compile Include="UserStatEntry.cs" />
+    <Compile Include="UserStatsRecorder.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\DamageLib\DamageLib.csproj">

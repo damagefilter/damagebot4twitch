@@ -1,37 +1,35 @@
-﻿using DamageBot.Di;
+﻿using System.Runtime.InteropServices;
+using DamageBot.Commands;
+using DamageBot.Di;
 using DamageBot.Events.Database;
 using DamageBot.Plugins;
+using DamageBot.Users;
 
 namespace Statistics {
     public class StatisticsPlugin : Plugin {
+        private UserStatsRecorder userStatsRecorder;
+        
         public override void InitResources(DependencyContainer diContainer) {
-            throw new System.NotImplementedException();
+            diContainer.AddBinding(typeof(UserStatsRecorder), true);
         }
 
         public override void Enable(DependencyContainer diContainer) {
-            throw new System.NotImplementedException();
+            this.userStatsRecorder = diContainer.Get<UserStatsRecorder>();
         }
 
         public override void InstallRoutine() {
             var ct = new CreateTableEvent();
             ct.TableName = "user_statistics";
             ct.FieldDefinitions.Add("id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT");
-            // time inside channel.
-            ct.FieldDefinitions.Add("time_watching TEXT NOT NULL");
-            // messages sent in all time
-            ct.FieldDefinitions.Add("messages_overall TEXT NOT NULL");
-            
-            // messages sent this week
-            ct.FieldDefinitions.Add("messages_this_week TEXT NOT NULL");
-            
-            // messages sent this month
-            ct.FieldDefinitions.Add("messages_this_month TEXT NOT NULL");
-            
-            // date on which the user was last seen.
-            // Is compared against to determine messages in this week and month.
-            ct.FieldDefinitions.Add("last_seen DATETIME NOT NULL");
-            
             ct.FieldDefinitions.Add("user_id INTEGER NOT NULL");
+            
+            ct.FieldDefinitions.Add("stat_date DATE");
+            // time inside channel.
+            ct.FieldDefinitions.Add("time_watching INTEGER");
+            
+            ct.FieldDefinitions.Add("messages_sent INTEGER");
+            // messages sent in all time
+
             ct.FieldDefinitions.Add("FOREIGN KEY(user_id) REFERENCES users(user_id)");
             ct.Call();
             
@@ -39,31 +37,45 @@ namespace Statistics {
             ct.TableName = "stream_statistics";
             ct.FieldDefinitions.Add("id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT");
             // When was this session recorded
-            ct.FieldDefinitions.Add("time_recorded DATETIME NOT NULL");
-
-            // Max num users that session.
-            ct.FieldDefinitions.Add("max_users INTEGER NOT NULL");
-            
-            // messages sent this session
-            ct.FieldDefinitions.Add("messages INTEGER NOT NULL");
-            
+            ct.FieldDefinitions.Add("session_started DATETIME NOT NULL");
             // How long did the stream go (time in seconds)
             ct.FieldDefinitions.Add("session_length TEXT NOT NULL");
-            
-            // messages sent this month
-            ct.FieldDefinitions.Add("messages_this_month TEXT NOT NULL");
-            
-            // date on which the user was last seen.
-            // Is compared against to determine messages in this week and month.
-            
-            
+
             ct.FieldDefinitions.Add("user_id INTEGER NOT NULL");
             ct.FieldDefinitions.Add("FOREIGN KEY(user_id) REFERENCES users(user_id)");
             ct.Call();
         }
 
         public override void UpdateRoutine(string installedVersion) {
-            throw new System.NotImplementedException();
+            // don't need yet
+            //throw new System.NotImplementedException();
+        }
+    }
+
+    public class ControlCommands {
+
+        private readonly UserStatsRecorder userRecorder;
+        public ControlCommands(UserStatsRecorder userRecorder) {
+            this.userRecorder = userRecorder;
+        }
+        [Command(
+            Aliases = new []{"startrec"}, 
+            Description = "Starts the recording of statistics for this session",
+            ToolTip = "!startrec",
+            RequiredElevation = Elevation.Broadcaster
+        )]
+        public void StartStreamCommand(IMessageReceiver caller,  string[] args) {
+            userRecorder.StartRecording();
+        }
+        
+        [Command(
+            Aliases = new []{"stoprec"}, 
+            Description = "Stops the recording of statistics for this session manually.\nOtherwise stops when broadcaster leaves channel.",
+            ToolTip = "!stoprec",
+            RequiredElevation = Elevation.Broadcaster
+        )]
+        public void StopStreamCommand(IMessageReceiver caller,  string[] args) {
+            userRecorder.StartRecording();
         }
     }
 }
