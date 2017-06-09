@@ -10,6 +10,7 @@ using DamageBot.Logging;
 namespace DamageBot.Database {
     public class SqliteConnectionManager : IConnectionManager, IDisposable {
         private readonly DbConnection connection;
+        private DbTransaction transaction;
         private readonly Logger log;
         
         public SqliteConnectionManager() {
@@ -66,6 +67,9 @@ CREATE INDEX author_version_idx ON plugins(plugin_name, plugin_author)";
         public DbDataReader Read(string query) {
             var cmd = this.connection.CreateCommand();
             cmd.CommandText = query;
+            if (this.transaction != null) {
+                cmd.Transaction = this.transaction;
+            }
             var reader = cmd.ExecuteReader();
             cmd.Dispose();
             return reader;
@@ -73,9 +77,27 @@ CREATE INDEX author_version_idx ON plugins(plugin_name, plugin_author)";
 
         public int Write(DbCommand command) {
             command.Connection = connection;
+            if (this.transaction != null) {
+                command.Transaction = this.transaction;
+            }
             int rows = command.ExecuteNonQuery();
             command.Dispose();
             return rows;
+        }
+
+        public void BeginTransaction() {
+            transaction?.Dispose();
+            transaction = connection.BeginTransaction();
+        }
+
+        public void Commit() {
+            transaction?.Commit();
+            transaction?.Dispose();
+            transaction = null;
+        }
+
+        public void Rollback() {
+            transaction?.Rollback();
         }
 
         public void Dispose() {

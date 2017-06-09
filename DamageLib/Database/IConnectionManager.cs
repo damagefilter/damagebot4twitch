@@ -17,5 +17,20 @@ namespace DamageBot.Database {
         /// <param name="command"></param>
         /// <returns></returns>
         int Write(DbCommand command);
+
+        /// <summary>
+        /// Begins a transaction.
+        /// </summary>
+        void BeginTransaction();
+
+        /// <summary>
+        /// Commits all the things made during the transaction process.
+        /// </summary>
+        void Commit();
+
+        /// <summary>
+        /// Does a rollback on the transaction. Do that when something fails.
+        /// </summary>
+        void Rollback();
     }
 }
