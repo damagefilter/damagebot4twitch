@@ -20,7 +20,6 @@ namespace DamageBot {
             bot.LoadPlugins();
             bot.BuildDiContainerAndResolver();
             bot.EnsureSubsystems();
-            bot.EnsureCommands();
             bot.EnablePlugin();
             bot.Connect();
             while (bot.IsRunning) {
