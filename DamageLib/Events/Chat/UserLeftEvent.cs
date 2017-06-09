@@ -11,9 +11,9 @@ namespace DamageBot.Events.Chat {
             get;
         }
 
-        public UserLeftEvent(IUser user, string joinedChannel) {
+        public UserLeftEvent(IUser user, string partedChannel) {
             this.User = user;
-            this.Channel = joinedChannel;
+            this.Channel = partedChannel;
         }
     }
 }

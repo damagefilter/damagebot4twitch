@@ -113,10 +113,23 @@ namespace DamageBot {
             this.twitchIrcClient.SendMessage("I am here! Therefore I am!");
         }
         private void OnJoinedChannel(object sender, OnUserJoinedArgs data) {
+            tasks.Add(() => {
+                var user = GetUser(data.Username, data.Channel);
+                if (user == null) {
+                    return;
+                }
+                new UserJoinedEvent(user, data.Channel).Call();
+            });
         }
         
         private void OnUserLeftChannel(object sender, OnUserLeftArgs data) {
-            
+            tasks.Add(() => {
+                var user = GetUser(data.Username, data.Channel);
+                if (user == null) {
+                    return;
+                }
+                new UserLeftEvent(user, data.Channel).Call();
+            });
         }
         
         private void OnMessageReceived(object sender, OnMessageReceivedArgs data) {
@@ -181,6 +194,18 @@ namespace DamageBot {
                 elevation = Elevation.Moderator;
             }
             user.Status = new ChatStatus(elevation, msg.Channel, msg.IsSubscriber);
+            return user;
+        }
+        
+        private IUser GetUser(string username, string channel) {
+            var r = new RequestUserEvent(username);
+            r.Call();
+            var user = r.ResolvedUser;
+            if (user == null) {
+                log.Warn("Unable to resolve user " + username);
+                return null;
+            }
+            user.Status = new ChatStatus(Elevation.Viewer, channel, false);
             return user;
         }
     }
