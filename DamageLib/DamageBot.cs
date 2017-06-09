@@ -87,9 +87,6 @@ namespace DamageBot {
         public void EnsureSubsystems() {
             this.diContainer.Get<IConnectionManager>(); // This creates a new instance and consequently creates all the stuff with it
             this.diContainer.Get<SqlUserFactory>(); // prepares the user factory. We speak to it via events, while the di container keeps a reference
-        }
-
-        public void EnsureCommands() {
             this.cmds = this.diContainer.Get<CommandManager>();
         }
         
