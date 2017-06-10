@@ -91,6 +91,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AuthenticationHandler.cs" />
+    <Compile Include="Bootstrapper.cs" />
     <Compile Include="BotConfig.cs" />
     <Compile Include="Commands\CommandAttribute.cs" />
     <Compile Include="Commands\CommandContainer.cs" />

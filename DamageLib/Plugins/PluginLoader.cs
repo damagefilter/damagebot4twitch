@@ -27,7 +27,7 @@ namespace DamageBot.Plugins {
             LoadPlugins(null);
         }
 
-        public void LoadPlugins(string pluginPath = null) {
+        public void LoadPlugins(string pluginPath) {
             // When we run as service, we must specify an absolute path because
             // the service working directory is not the directory where the actual executable is
             if (string.IsNullOrEmpty(pluginPath)) {
@@ -35,14 +35,14 @@ namespace DamageBot.Plugins {
             }
 
             //var pluginPath = "plugins";
-            log.Info(string.Format("Plugins directory: {0}", pluginPath));
+            log.Info($"Plugins directory: {pluginPath}");
             if (plugins != null && plugins.Count > 0) {
                 throw new PluginLoaderException("Plugins appear to be loaded already.");
             }
             plugins = new List<Plugin>();
             
             if (!Directory.Exists(pluginPath)) {
-                log.Info(string.Format("Plugins directory ({0}) doesn't exist. Creating new one.", pluginPath));
+                log.Info($"Plugins directory ({pluginPath}) doesn't exist. Creating new one.");
                 Directory.CreateDirectory(pluginPath);
             }
             
@@ -67,7 +67,7 @@ namespace DamageBot.Plugins {
                         plugins.Add(instance);
                     }
                     catch (Exception e) {
-                        log.Error(string.Format("Loading plugin {0} failed.", type), e);
+                        log.Error($"Loading plugin {type} failed.", e);
                     }
                 }
             }

@@ -1,12 +1,10 @@
 using System;
 using DamageBot.Commands;
 using DamageBot.Database;
-using DamageBot.Di;
 using DamageBot.Events.Chat;
 using DamageBot.Events.Users;
 using DamageBot.EventSystem;
 using DamageBot.Logging;
-using DamageBot.Plugins;
 using DamageBot.Tasking;
 using DamageBot.Users;
 using TwitchLib;
@@ -17,10 +15,8 @@ namespace DamageBot {
     public class DamageBot {
         private BotConfig configuration;
         
-        private DependencyContainer diContainer;
-        private PluginLoader pluginLoader;
         private TwitchClient twitchIrcClient;
-        private TaskQueue tasks;
+        private readonly TaskQueue tasks;
         
         private CommandManager cmds;
 
@@ -30,16 +26,15 @@ namespace DamageBot {
 
         /// <summary>
         /// </summary>
-        /// <param name="config">the bot configuration</param>
-        public DamageBot(BotConfig config) {
+        /// <param name="cmds"></param>
+        public DamageBot(CommandManager cmds) {
             log = LogManager.GetLogger(GetType());
-            this.configuration = config;
-            this.diContainer = new DependencyContainer();
-            this.pluginLoader = new PluginLoader();
             this.tasks = new TaskQueue();
-            this.diContainer.AddBinding(typeof(CommandManager), typeof(CommandManager), true);
-            this.diContainer.AddBinding(typeof(SqlUserFactory), typeof(SqlUserFactory), true);
-            this.diContainer.AddBinding(typeof(TwitchUserApi), typeof(TwitchUserApi), true);
+            this.cmds = cmds;
+        }
+
+        public void SetConfiguration(BotConfig config) {
+            this.configuration = config;
         }
 
         public void PrepareTwitch() {
@@ -79,36 +74,7 @@ namespace DamageBot {
             EventDispatcher.Instance.Register<RequestChannelMessageEvent>(OnChannelMessageRequest);
             EventDispatcher.Instance.Register<RequestWhisperMessageEvent>(OnWhisperMessageRequest);
         }
-
-        public void BuildDiContainerAndResolver() {
-            diContainer.BuildAndCreateResolver();
-        }
-
-        public void EnsureSubsystems() {
-            this.diContainer.Get<IConnectionManager>(); // This creates a new instance and consequently creates all the stuff with it
-            this.diContainer.Get<SqlUserFactory>(); // prepares the user factory. We speak to it via events, while the di container keeps a reference
-            this.cmds = this.diContainer.Get<CommandManager>();
-        }
         
-        /// <summary>
-        /// Sets the implementation for the bots database connection.
-        /// Without it many features will likely fail a lot.
-        /// </summary>
-        /// <typeparam name="T"></typeparam>
-        public void BindDatabaseImplementation<T>() where T : IConnectionManager {
-            this.diContainer.AddBinding(typeof(IConnectionManager), typeof(T), true);
-        }
-
-        public void LoadPlugins() {
-            this.pluginLoader.LoadPlugins();
-            this.pluginLoader.InitialisePluginResources(diContainer);
-        }
-
-        public void EnablePlugin() {
-            this.pluginLoader.EnsureInstallations();
-            this.pluginLoader.EnablePlugins(diContainer);
-        }
-
         private void OnBotJoinedChannel(object sender, OnJoinedChannelArgs agrs) {
             this.twitchIrcClient.SendMessage("I am here! Therefore I am!");
         }

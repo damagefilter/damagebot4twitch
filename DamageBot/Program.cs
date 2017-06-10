@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Threading;
-using DamageBot.Database;
 using DamageBot.Logging;
 
 namespace DamageBot {
@@ -13,14 +12,7 @@ namespace DamageBot {
             if (string.IsNullOrEmpty(cfg.ApiAuthKey)) {
                 SetupProcess(cfg);
             }
-            var bot = new DamageBot(cfg);
-            bot.PrepareTwitch();
-            bot.BindDatabaseImplementation<SqliteConnectionManager>();
-            bot.InitCallbacks();
-            bot.LoadPlugins();
-            bot.BuildDiContainerAndResolver();
-            bot.EnsureSubsystems();
-            bot.EnablePlugin();
+            var bot = new Bootstrapper(cfg).Bootstrap();
             bot.Connect();
             while (bot.IsRunning) {
                 Thread.Sleep(500);
