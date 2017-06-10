@@ -1,20 +1,28 @@
-﻿using System.Runtime.InteropServices;
-using DamageBot.Commands;
+﻿using DamageBot.Commands;
 using DamageBot.Di;
 using DamageBot.Events.Database;
 using DamageBot.Plugins;
 using DamageBot.Users;
 
 namespace Statistics {
+    
+    /// <summary>
+    /// Records simple stats about users and the channel like messages sent per user,
+    /// stream length and such things.
+    /// </summary>
     public class StatisticsPlugin : Plugin {
-        
+        public UserStatsRecorder UserRecorder {
+            get;
+            private set;
+        }
+
         public override void InitResources(DependencyContainer diContainer) {
             diContainer.AddBinding(typeof(UserStatsRecorder), true);
         }
 
         public override void Enable(DependencyContainer diContainer) {
-            var userStatsRecorder = diContainer.Get<UserStatsRecorder>();
-            diContainer.Get<CommandManager>().RegisterCommandsInObject(new ControlCommands(userStatsRecorder), false);
+            this.UserRecorder = diContainer.Get<UserStatsRecorder>();
+            diContainer.Get<CommandManager>().RegisterCommandsInObject(new ControlCommands(this.UserRecorder), false);
         }
 
         public override void InstallRoutine() {
@@ -30,18 +38,6 @@ namespace Statistics {
             ct.FieldDefinitions.Add("messages_sent INTEGER");
             // messages sent in all time
 
-            ct.FieldDefinitions.Add("FOREIGN KEY(user_id) REFERENCES users(user_id)");
-            ct.Call();
-            
-            ct = new CreateTableEvent();
-            ct.TableName = "stream_statistics";
-            ct.FieldDefinitions.Add("id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT");
-            // When was this session recorded
-            ct.FieldDefinitions.Add("session_started DATETIME NOT NULL");
-            // How long did the stream go (time in seconds)
-            ct.FieldDefinitions.Add("session_length TEXT NOT NULL");
-
-            ct.FieldDefinitions.Add("user_id INTEGER NOT NULL");
             ct.FieldDefinitions.Add("FOREIGN KEY(user_id) REFERENCES users(user_id)");
             ct.Call();
         }

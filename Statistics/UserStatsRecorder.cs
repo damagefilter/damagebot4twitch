@@ -93,6 +93,10 @@ namespace Statistics {
                     entry.Save();
                 }
             }
+            if (ev.User.Status.IsBroadcaster) {
+                // broadcaster left. Stop the recording of things!
+                this.StopRecording();
+            }
         }
 
     }
