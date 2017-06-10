@@ -46,6 +46,13 @@ namespace Statistics {
             // don't need yet
             //throw new System.NotImplementedException();
         }
+
+        protected override PluginDescriptor InternalPreparePluginDescriptor(PluginDescriptor descriptor) {
+            descriptor.Author = "damagefilter";
+            descriptor.Version = "1.0";
+            descriptor.Name = "Chat Statistics";
+            return descriptor;
+        }
     }
 
     public class ControlCommands {

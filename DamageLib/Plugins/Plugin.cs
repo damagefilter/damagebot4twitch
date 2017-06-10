@@ -38,19 +38,29 @@ namespace DamageBot.Plugins {
         /// </summary>
         /// <param name="installedVersion"></param>
         public abstract void UpdateRoutine(string installedVersion);
+        
+        /// <summary>
+        /// Called on the Plugin.
+        /// You get a reference to the relevant descriptor of your plugin.
+        /// It's your job to fill versioning, author and name information into it correctly.
+        /// Do it!
+        /// It's used, for instance, to determine whether or not the plugin needs installing or updating
+        /// routines called on it.
+        /// </summary>
+        /// <param name="descriptor"></param>
+        /// <returns></returns>
+        protected abstract PluginDescriptor InternalPreparePluginDescriptor(PluginDescriptor descriptor);
 
         /// <summary>
         /// Get a suitable descriptor from this plugin which is then used
-        /// in the plugin loader to manage its state and such.
-        /// How to use: Call base class, use returned descriptor to set
-        /// appropritate data to the properties, return that.
+        /// in the plugin loader to manage its state and versioning etc
         /// </summary>
         /// <returns></returns>
-        public virtual PluginDescriptor GetDescriptor() {
+        public PluginDescriptor GetDescriptor() {
             if (this.localDescriptor == null) {
                 this.localDescriptor = new PluginDescriptor(this);
             }
-            return this.localDescriptor;
+            return InternalPreparePluginDescriptor(this.localDescriptor);
         }
     }
 }

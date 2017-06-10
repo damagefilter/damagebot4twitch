@@ -32,12 +32,11 @@ namespace UserCommands {
             // nothin net
         }
 
-        public override PluginDescriptor GetDescriptor() {
-            base.GetDescriptor();
-            localDescriptor.Name = "UserCommands";
-            localDescriptor.Author = "damagefilter";
-            localDescriptor.Version = "1.0";
-            return localDescriptor;
+        protected override PluginDescriptor InternalPreparePluginDescriptor(PluginDescriptor descriptor) {
+            descriptor.Name = "User Commands";
+            descriptor.Author = "damagefilter";
+            descriptor.Version = "1.0";
+            return descriptor;
         }
     }
 
