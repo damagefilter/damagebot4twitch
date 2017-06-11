@@ -45,7 +45,6 @@ namespace Statistics {
                 Thread.Sleep(60000);
                 Dump();
             }
-            
         }
 
         private void Dump() {

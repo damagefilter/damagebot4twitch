@@ -87,10 +87,12 @@ namespace Statistics {
             select.Call();
 
             if (select.ReadNext()) {
+                // int statId, int userid, DateTime statDate, int timeWatched, int messagesSent
                 return new UserStatEntry(
                     select.GetInteger("id"),
                     select.GetInteger("user_id"),
-                    select.GetInteger("time_watching"),
+                    select.GetDateTime("stat_date"),
+                    select.GetInteger("time_watched"),
                     select.GetInteger("messages_sent")
                 );
             }
