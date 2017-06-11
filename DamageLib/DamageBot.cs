@@ -1,6 +1,5 @@
 using System;
 using DamageBot.Commands;
-using DamageBot.Database;
 using DamageBot.Events.Chat;
 using DamageBot.Events.Users;
 using DamageBot.EventSystem;
@@ -14,15 +13,19 @@ using TwitchLib.Models.Client;
 namespace DamageBot {
     public class DamageBot {
         private BotConfig configuration;
-        
-        private TwitchClient twitchIrcClient;
+
+        public TwitchClient TwitchIrcClient {
+            get;
+            set;
+        }
+
         private readonly TaskQueue tasks;
         
-        private CommandManager cmds;
+        private readonly CommandManager cmds;
 
         private readonly Logger log;
 
-        public bool IsRunning => twitchIrcClient.IsConnected;
+        public bool IsRunning => TwitchIrcClient.IsConnected;
 
         /// <summary>
         /// </summary>
@@ -40,7 +43,7 @@ namespace DamageBot {
         public void PrepareTwitch() {
             log.Info("Setting up channel user");
             var creds = new ConnectionCredentials(configuration.TwitchUsername, configuration.TwitchUserAuthKey);
-            this.twitchIrcClient = new TwitchClient(creds, configuration.Channel);
+            this.TwitchIrcClient = new TwitchClient(creds, configuration.Channel);
             
             log.Info("Preparing API Access.");
             TwitchAPI.Settings.ClientId = configuration.ApplicationClientId;
@@ -50,8 +53,8 @@ namespace DamageBot {
 
         public void Connect() {
             log.Info("Connecting to IRC");
-            this.twitchIrcClient.Connect();
-            log.Info("Connected? " + this.twitchIrcClient.IsConnected);
+            this.TwitchIrcClient.Connect();
+            log.Info("Connected? " + this.TwitchIrcClient.IsConnected);
             
             this.tasks.StartPolling();
             log.Info("Ready. Lets roll.");
@@ -59,24 +62,24 @@ namespace DamageBot {
 
         public void Disconnect() {
             log.Info("Disconnecting bot.");
-            this.twitchIrcClient.Disconnect();
+            this.TwitchIrcClient.Disconnect();
         }
         
         public void InitCallbacks() {
-            this.twitchIrcClient.OnJoinedChannel += OnBotJoinedChannel;
+            this.TwitchIrcClient.OnJoinedChannel += OnBotJoinedChannel;
             
-            this.twitchIrcClient.OnUserJoined += OnJoinedChannel;
-            this.twitchIrcClient.OnMessageReceived += OnMessageReceived;
-            this.twitchIrcClient.OnChatCommandReceived += OnChatCommand;
-            this.twitchIrcClient.OnWhisperCommandReceived += OnWhisperCommand;
-            this.twitchIrcClient.OnUserLeft += OnUserLeftChannel;
+            this.TwitchIrcClient.OnUserJoined += OnJoinedChannel;
+            this.TwitchIrcClient.OnMessageReceived += OnMessageReceived;
+            this.TwitchIrcClient.OnChatCommandReceived += OnChatCommand;
+            this.TwitchIrcClient.OnWhisperCommandReceived += OnWhisperCommand;
+            this.TwitchIrcClient.OnUserLeft += OnUserLeftChannel;
 
             EventDispatcher.Instance.Register<RequestChannelMessageEvent>(OnChannelMessageRequest);
             EventDispatcher.Instance.Register<RequestWhisperMessageEvent>(OnWhisperMessageRequest);
         }
         
         private void OnBotJoinedChannel(object sender, OnJoinedChannelArgs agrs) {
-            this.twitchIrcClient.SendMessage("I am here! Therefore I am!");
+            this.TwitchIrcClient.SendMessage("I am here! Therefore I am!");
         }
         private void OnJoinedChannel(object sender, OnUserJoinedArgs data) {
             tasks.Add(() => {
@@ -130,16 +133,16 @@ namespace DamageBot {
         }
         
         private void OnWhisperCommand(object sender, OnWhisperCommandReceivedArgs data) {
-            this.twitchIrcClient.SendMessage($"{data.Command} whisper command received.");
+            this.TwitchIrcClient.SendMessage($"{data.Command} whisper command received.");
         }
 
 
         private void OnChannelMessageRequest(RequestChannelMessageEvent ev) {
-            this.twitchIrcClient.SendMessage(ev.Channel ?? twitchIrcClient.JoinedChannels[0].Channel, ev.Message);
+            this.TwitchIrcClient.SendMessage(ev.Channel ?? TwitchIrcClient.JoinedChannels[0].Channel, ev.Message);
         }
         
         private void OnWhisperMessageRequest(RequestWhisperMessageEvent ev) {
-            this.twitchIrcClient.SendWhisper(ev.User.Username, ev.Message);
+            this.TwitchIrcClient.SendWhisper(ev.User.Username, ev.Message);
         }
 
         

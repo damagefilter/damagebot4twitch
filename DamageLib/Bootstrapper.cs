@@ -55,6 +55,11 @@ namespace DamageBot {
             return this;
         }
 
+        public Bootstrapper EnsurePluginInstallations() {
+            this.loader.EnsureInstallations();
+            return this;
+        }
+
         public Bootstrapper EnablePlugins() {
             loader.EnablePlugins(diContainer);
             return this;
@@ -63,8 +68,8 @@ namespace DamageBot {
         public Bootstrapper PrepareBot() {
             var bot = this.diContainer.Get<DamageBot>();
             bot.SetConfiguration(this.cfg);
-            bot.InitCallbacks();
             bot.PrepareTwitch();
+            bot.InitCallbacks();
             return this;
         }
 
@@ -78,7 +83,15 @@ namespace DamageBot {
         /// </summary>
         /// <returns></returns>
         public DamageBot Bootstrap() {
-            return PrepareDi().BindDatabaseImplementation<SqliteConnectionManager>().LoadPlugins().FinaliseDi().EnsureInstance().EnablePlugins().PrepareBot().GetBot();
+            return PrepareDi()
+                .BindDatabaseImplementation<SqliteConnectionManager>()
+                .LoadPlugins()
+                .FinaliseDi()
+                .EnsureInstance()
+                .EnsurePluginInstallations()
+                .PrepareBot()
+                .EnablePlugins()
+                .GetBot();
         }
     }
 }

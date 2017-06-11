@@ -29,6 +29,11 @@ namespace DamageBot.Users {
         /// Is this the channel operator (broadcaster)?
         /// </summary>
         public bool IsBroadcaster => this.UserElevation == Elevation.Broadcaster;
+        
+        /// <summary>
+        /// Is user a moderator?
+        /// </summary>
+        public bool IsModerator => this.UserElevation == Elevation.Moderator;
 
         public string Channel {
             get;
