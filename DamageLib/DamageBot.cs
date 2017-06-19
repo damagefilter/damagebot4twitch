@@ -93,7 +93,7 @@ namespace DamageBot {
         
         private void OnUserLeftChannel(object sender, OnUserLeftArgs data) {
             tasks.Add(() => {
-                var user = GetUser(data.Username, data.Channel);
+                var user = GetUser(data.Username, null, data.Channel);
                 if (user == null) {
                     return;
                 }
@@ -148,7 +148,7 @@ namespace DamageBot {
         
 
         private IUser GetUser(ChatMessage msg) {
-            var r = new RequestUserEvent(msg.Username);
+            var r = new RequestUserEvent(msg.Username, msg.UserId);
             r.Call();
             var user = r.ResolvedUser;
             if (user == null) {
@@ -166,8 +166,8 @@ namespace DamageBot {
             return user;
         }
         
-        private IUser GetUser(string username, string channel) {
-            var r = new RequestUserEvent(username);
+        private IUser GetUser(string username, string twitchId, string channel) {
+            var r = new RequestUserEvent(username, twitchId);
             r.Call();
             var user = r.ResolvedUser;
             if (user == null) {

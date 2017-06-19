@@ -25,7 +25,16 @@ namespace DamageBot.Events.Database {
         /// <summary>
         /// Affected rows for the specified insert operation
         /// </summary>
-        public int AffectedRows {
+        public long AffectedRows {
+            get;
+            set;
+        }
+
+        /// <summary>
+        /// Set after the call.
+        /// Returns the LAST insert ID. If you inserted multilple rows in one statement - just so you know
+        /// </summary>
+        public long LastInsertId {
             get;
             set;
         }

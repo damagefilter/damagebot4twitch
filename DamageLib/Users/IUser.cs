@@ -3,7 +3,7 @@ using DamageBot.Commands;
 
 namespace DamageBot.Users {
     public interface IUser : IMessageReceiver {
-        int UserId {
+        long UserId {
             get;
         }
         

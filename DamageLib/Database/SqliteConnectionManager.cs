@@ -75,12 +75,18 @@ CREATE INDEX author_version_idx ON plugins(plugin_name, plugin_author)";
             return reader;
         }
 
-        public int Write(DbCommand command) {
+        public long Write(DbCommand command) {
             command.Connection = connection;
             if (this.transaction != null) {
                 command.Transaction = this.transaction;
             }
-            int rows = command.ExecuteNonQuery();
+            long rows;
+            if (command.CommandText.ToLower().StartsWith("insert")) {
+                rows = (int)(this.connection as SQLiteConnection).LastInsertRowId;
+            }
+            else {
+                rows = command.ExecuteNonQuery();
+            }
             command.Dispose();
             return rows;
         }
@@ -122,7 +128,7 @@ CREATE INDEX author_version_idx ON plugins(plugin_name, plugin_author)";
         
         private void OnInsertRequest(InsertEvent ev) {
             var b = new SqliteInsertQueryBuilder(ev);
-            ev.AffectedRows = this.Write(b.Build());
+            ev.LastInsertId = this.Write(b.Build());
         }
         
         private void OnUpdateRequest(UpdateEvent ev) {

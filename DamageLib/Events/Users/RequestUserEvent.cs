@@ -9,14 +9,19 @@ namespace DamageBot.Events.Users {
         public string Username {
             get;
         }
+        
+        public string TwitchId {
+            get;
+        }
 
         public IUser ResolvedUser {
             get;
             set;
         }
 
-        public RequestUserEvent(string userName) {
+        public RequestUserEvent(string userName, string twitchId) {
             this.Username = userName;
+            this.TwitchId = twitchId;
         }
     }
 }

@@ -16,7 +16,7 @@ namespace DamageBot.Database {
         /// </summary>
         /// <param name="command"></param>
         /// <returns></returns>
-        int Write(DbCommand command);
+        long Write(DbCommand command);
 
         /// <summary>
         /// Begins a transaction.
