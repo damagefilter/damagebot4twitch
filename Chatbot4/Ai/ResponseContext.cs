@@ -8,6 +8,7 @@ namespace Chatbot4.Ai {
         Timeout,
         Ban,
         Chat,
+        Ticker,
         Invalid
     }
 }

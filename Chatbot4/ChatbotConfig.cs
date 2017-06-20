@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.IO;
+using Newtonsoft.Json;
 
 namespace Chatbot4 {
     public class ChatbotConfig {
@@ -57,6 +59,36 @@ namespace Chatbot4 {
         public List<string> PositiveWords {
             get;
             private set;
+        }
+        
+        public void Save() {
+            File.WriteAllText("chatbot_config.json", JsonConvert.SerializeObject(this, Formatting.Indented));
+        }
+
+        public static ChatbotConfig LoadConfig() {
+            if (File.Exists("chatbot_config.json")) {
+                var mod = JsonConvert.DeserializeObject<ChatbotConfig>(File.ReadAllText("chatbot_config.json"));
+                if (mod.NegativeWords == null) {
+                    mod.NegativeWords = new List<string>();
+                }
+
+                if (mod.PositiveWords == null) {
+                    mod.PositiveWords = new List<string>();
+                }
+
+                if (mod.BotNicks == null || mod.BotNicks.Count == 0) {
+                    mod.BotNicks = new List<string>();
+                }
+                return mod;
+            }
+            else {
+                var mod = new ChatbotConfig();
+                mod.NegativeWords = new List<string>();
+                mod.PositiveWords = new List<string>();
+                mod.BotNicks = new List<string>();
+                return mod;
+            }
+            
         }
     }
 }

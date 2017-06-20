@@ -42,12 +42,15 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Ai\Conversation.cs" />
     <Compile Include="Ai\Mood.cs" />
     <Compile Include="Ai\ResponseInfo.cs" />
     <Compile Include="Ai\RawResponseNode.cs" />
     <Compile Include="Ai\ResponseContext.cs" />
     <Compile Include="Ai\ResponsePool.cs" />
     <Compile Include="ChatbotConfig.cs" />
+    <Compile Include="ChatbotPlugin.cs" />
+    <Compile Include="DefaultPlaceholderProvider.cs" />
     <Compile Include="Events\BatchReplacePlaceholdersEvent.cs" />
     <Compile Include="Events\ReplacePlaceholdersEvent.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
