@@ -1,32 +1,66 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
+using DamageBot.Events.Chat;
 using DamageBot.Users;
 
 namespace Chatbot4.Ai {
     public class Conversation {
-        private ResponsePool responses;
-        private Mood currentMood;
+        private readonly ResponsePool responses;
         private readonly ChatbotConfig botConfig;
-        private int currentMoodValue;
-        private bool conversationRunning;
+        private readonly IUser conversationPartner;
         
-        public Conversation(ResponsePool pool, ChatbotConfig cfg) {
+        private Mood currentMood; // last known mood of this conversation.
+        private int currentMoodValue; // used to evaluate which mood should be set
+        private bool conversationRunning;
+
+        private DateTime lastSpokenTo;
+
+        private Random random;
+        
+        public Conversation(ResponsePool pool, ChatbotConfig cfg, IUser conversationPartner) {
             this.responses = pool;
             this.currentMood = Mood.Normal;
             botConfig = cfg;
             currentMoodValue = 0;
+            this.conversationPartner = conversationPartner;
+            this.random = new Random();
         }
 
-        public void HandleMessage(string incomingMessage, IUser sendingUser, ResponseContext context) {
-            EvaluateMood(incomingMessage);
-            var node = responses.FindNode(currentMood, context, conversationRunning, incomingMessage, sendingUser);
+        public void HandleTickerMessage() {
+            
+        }
+
+        public void HandleMessage(string incomingMessage, ResponseContext context) {
+            if (incomingMessage != null) {
+                EvaluateMood(incomingMessage);
+            }
+            
+            var node = responses.FindNode(currentMood, context, conversationRunning, incomingMessage, conversationPartner);
             if (node == null) {
                 return;
             }
             if (!conversationRunning) {
                 conversationRunning = true;
             }
-            // TODO: is delay > 0 schedule sending message otherwise send directly
+            // we use this to make the bot forget it was spoken to in order to not drag a conversation along for hours.
+            if ((lastSpokenTo - DateTime.Now).Minutes > 2) {
+                conversationRunning = false;
+            }
+            lastSpokenTo = DateTime.Now;
+            SendResponse(node);
+        }
+
+        public void SendResponse(ResponseInfo node) {
+            if (random.Next(0, 100) <= node.ResponseProbability) {
+                Task.Run(async () => {
+                    await Task.Delay(TimeSpan.FromSeconds(node.ResponseDelay));
+                    new RequestChannelMessageEvent(conversationPartner.Status.Channel, node.ResponseText).Call();
+                });
+            }
         }
 
         private void EvaluateMood(string message) {

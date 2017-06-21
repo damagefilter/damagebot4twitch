@@ -50,6 +50,7 @@
     <Compile Include="Ai\ResponsePool.cs" />
     <Compile Include="ChatbotConfig.cs" />
     <Compile Include="ChatbotPlugin.cs" />
+    <Compile Include="ConversationDispatcher.cs" />
     <Compile Include="DefaultPlaceholderProvider.cs" />
     <Compile Include="Events\BatchReplacePlaceholdersEvent.cs" />
     <Compile Include="Events\ReplacePlaceholdersEvent.cs" />
@@ -62,6 +63,9 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>xcopy "$(TargetPath)" "$(SolutionDir)plugins\" /F /R /Y /I</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

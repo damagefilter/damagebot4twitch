@@ -17,9 +17,12 @@ namespace Chatbot4.Ai {
     public class ResponsePool {
         private Dictionary<Mood, Dictionary<ResponseContext, List<RawResponseNode>>> loadedResponses;
 
+        private readonly Random random;
+
         public ResponsePool(ChatbotConfig cfg) {
             var rawResponseList = JsonConvert.DeserializeObject<List<RawResponseNode>>(File.ReadAllText("chatter.json"));
             PrepareResponseStructure();
+            this.random = new Random();
             foreach (var node in rawResponseList) {
                 
                 // replace bot name placeholder with a list of all botnames
@@ -40,18 +43,36 @@ namespace Chatbot4.Ai {
             }
         }
 
-        public ResponseInfo FindTickerNode(Mood idealMood) {
-            var idealNodes = this.loadedResponses[idealMood][ResponseContext.Ticker];
-            var defaultNodes = this.loadedResponses[Mood.Normal][ResponseContext.Ticker];
-            Random r = new Random();
+        /// <summary>
+        /// Find a random node for the given mood or a normal mood and given context, if none is found in the ideal mood list
+        /// </summary>
+        /// <param name="idealMood"></param>
+        /// <param name="context"></param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public ResponseInfo FindRandomNodeForContextAndMood(Mood idealMood, ResponseContext context, IUser user) {
+            var idealNodes = this.loadedResponses[idealMood][context];
+            var defaultNodes = this.loadedResponses[Mood.Normal][context];
             if (idealNodes.Count > 0) {
-                var node = idealNodes[r.Next(0, idealNodes.Count - 1)];
+                var node = idealNodes[random.Next(0, idealNodes.Count - 1)];
                 var replacer = new ReplacePlaceholdersEvent(GetRandomAnswer(node.Answers));
                 replacer.Call();
-                return new ResponseInfo(replacer.Text, node.ResponseProbability, node.RespondTime);
+                return new ResponseInfo(user != null ? replacer.Text.Replace("{CURRENT_USER}", user.Username) : replacer.Text, node.ResponseProbability, node.RespondTime);
             }
             if (defaultNodes.Count > 0) {
-                var node = defaultNodes[r.Next(0, idealNodes.Count - 1)];
+                var node = defaultNodes[random.Next(0, idealNodes.Count - 1)];
+                var replacer = new ReplacePlaceholdersEvent(GetRandomAnswer(node.Answers));
+                replacer.Call();
+                return new ResponseInfo(user != null ? replacer.Text.Replace("{CURRENT_USER}", user.Username) : replacer.Text, node.ResponseProbability, node.RespondTime);
+            }
+            return null;
+        }
+        
+        public ResponseInfo GetTickerNode() {
+            var nodes = this.loadedResponses[Mood.Normal][ResponseContext.Ticker];
+            
+            if (nodes.Count > 0) {
+                var node = nodes[random.Next(0, nodes.Count - 1)];
                 var replacer = new ReplacePlaceholdersEvent(GetRandomAnswer(node.Answers));
                 replacer.Call();
                 return new ResponseInfo(replacer.Text, node.ResponseProbability, node.RespondTime);
@@ -59,12 +80,25 @@ namespace Chatbot4.Ai {
             return null;
         }
 
-        public ResponseInfo FindNode(Mood idealMood, ResponseContext context, bool conversationIsRunning, string userMessage, IUser user) {
+        /// <summary>
+        /// Find a node with response information for the given message.
+        /// </summary>
+        /// <param name="idealMood">The ideal response mood.</param>
+        /// <param name="context">The context of the given message</param>
+        /// <param name="allowIgnorePrimary">Set true to skip primary word checks on nodes that allow skipping these checks. (CanIgnorePrimary)</param>
+        /// <param name="userMessage">the message to find a response for</param>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        public ResponseInfo FindNode(Mood idealMood, ResponseContext context, bool allowIgnorePrimary, string userMessage, IUser user) {
+            if (context != ResponseContext.Chat) {
+                return FindRandomNodeForContextAndMood(idealMood, context, user);
+            }
+            
             var idealNodes = this.loadedResponses[idealMood][context];
             var defaultNodes = this.loadedResponses[Mood.Normal][context];
 
             foreach (var node in idealNodes) {
-                if ((node.CanIgnorePrimary && conversationIsRunning) || node.RequiredPrimaryMatches <= this.CountMatches(userMessage, node.PrimaryWordPool)) {
+                if ((node.CanIgnorePrimary && allowIgnorePrimary) || node.RequiredPrimaryMatches <= this.CountMatches(userMessage, node.PrimaryWordPool)) {
                     if (node.RequiredSecondaryMatches <= this.CountMatches(userMessage, node.SecondaryWordPool)) {
                         var replacer = new ReplacePlaceholdersEvent(GetRandomAnswer(node.Answers));
                         replacer.Call();
@@ -74,7 +108,7 @@ namespace Chatbot4.Ai {
             }
             
             foreach (var node in defaultNodes) {
-                if ((node.CanIgnorePrimary && conversationIsRunning) || node.RequiredPrimaryMatches <= this.CountMatches(userMessage, node.PrimaryWordPool)) {
+                if ((node.CanIgnorePrimary && allowIgnorePrimary) || node.RequiredPrimaryMatches <= this.CountMatches(userMessage, node.PrimaryWordPool)) {
                     if (node.RequiredSecondaryMatches <= this.CountMatches(userMessage, node.SecondaryWordPool)) {
                         var replacer = new ReplacePlaceholdersEvent(GetRandomAnswer(node.Answers));
                         replacer.Call();
@@ -94,8 +128,7 @@ namespace Chatbot4.Ai {
         }
 
         private string GetRandomAnswer(List<string> answers) {
-            var r = new Random();
-            return answers[r.Next(0, answers.Count - 1)];
+            return answers[random.Next(0, answers.Count - 1)];
         }
         
         private void PrepareResponseStructure() {

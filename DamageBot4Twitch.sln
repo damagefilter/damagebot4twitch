@@ -1,12 +1,14 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 14
-VisualStudioVersion = 14.0.24720.0
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DamageBot", "DamageBot\DamageBot.csproj", "{403FEAEE-896E-4FB8-BF9E-9182DBA39FD2}"
 	ProjectSection(ProjectDependencies) = postProject
 		{E6C34E29-BD46-4CFE-81DF-C07917D9210E} = {E6C34E29-BD46-4CFE-81DF-C07917D9210E}
 		{CB5B997B-BF48-47D1-834B-EE61EAA2BB81} = {CB5B997B-BF48-47D1-834B-EE61EAA2BB81}
+		{FB12DFA0-F88E-4FA9-981D-CFABC0AAC521} = {FB12DFA0-F88E-4FA9-981D-CFABC0AAC521}
+		{7BA8C5B9-D075-4736-8BDA-541D98B10CFF} = {7BA8C5B9-D075-4736-8BDA-541D98B10CFF}
 		{B916CEC6-FE25-4CE1-96D1-106B6A817452} = {B916CEC6-FE25-4CE1-96D1-106B6A817452}
 	EndProjectSection
 EndProject
@@ -19,6 +21,8 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VanillaModeration", "VanillaModeration\VanillaModeration.csproj", "{E6C34E29-BD46-4CFE-81DF-C07917D9210E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Chatbot4", "Chatbot4\Chatbot4.csproj", "{7BA8C5B9-D075-4736-8BDA-541D98B10CFF}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScoresCore", "ScoresCore\ScoresCore.csproj", "{FB12DFA0-F88E-4FA9-981D-CFABC0AAC521}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -50,6 +54,10 @@ Global
 		{7BA8C5B9-D075-4736-8BDA-541D98B10CFF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7BA8C5B9-D075-4736-8BDA-541D98B10CFF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7BA8C5B9-D075-4736-8BDA-541D98B10CFF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FB12DFA0-F88E-4FA9-981D-CFABC0AAC521}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FB12DFA0-F88E-4FA9-981D-CFABC0AAC521}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FB12DFA0-F88E-4FA9-981D-CFABC0AAC521}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FB12DFA0-F88E-4FA9-981D-CFABC0AAC521}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

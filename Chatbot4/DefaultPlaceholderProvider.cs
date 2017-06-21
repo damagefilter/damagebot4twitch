@@ -13,11 +13,11 @@ namespace Chatbot4 {
         }
 
         private void OnBatchRequest(BatchReplacePlaceholdersEvent ev) {
-            
+            // TODO
         }
 
         private void OnSingleRequest(ReplacePlaceholdersEvent ev) {
-            
+            // TODO
         }
     }
 }

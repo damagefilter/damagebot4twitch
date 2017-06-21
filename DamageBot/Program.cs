@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
+using Chatbot4.Ai;
 using DamageBot.Logging;
 
 namespace DamageBot {
@@ -8,15 +10,17 @@ namespace DamageBot {
     internal class Program {
         public static void Main(string[] args) {
             LogManager.ConfigureLogger();
-            BotConfig cfg = BotConfig.LoadConfig();
-            if (string.IsNullOrEmpty(cfg.ApiAuthKey)) {
-                SetupProcess(cfg);
-            }
-            var bot = new Bootstrapper(cfg).Bootstrap();
-            bot.Connect();
-            while (bot.IsRunning) {
-                Thread.Sleep(500);
-            }
+            List<RawResponseNode> nodes = new List<RawResponseNode>();
+            nodes
+//            BotConfig cfg = BotConfig.LoadConfig();
+//            if (string.IsNullOrEmpty(cfg.ApiAuthKey)) {
+//                SetupProcess(cfg);
+//            }
+//            var bot = new Bootstrapper(cfg).Bootstrap();
+//            bot.Connect();
+//            while (bot.IsRunning) {
+//                Thread.Sleep(500);
+//            }
         }
 
         private static void SetupProcess(BotConfig cfg) {
