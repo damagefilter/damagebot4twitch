@@ -62,7 +62,7 @@ namespace Statistics {
 
         public void OnUserJoined(UserJoinedEvent ev) {
             if (!watchedData.ContainsKey(ev.User.Username)) {
-                var stats = UserStatEntry.GetByUserForToday(ev.User.UserId);
+                var stats = UserStatEntry.GetByUserForToday((int)ev.User.UserId);
                 if (!watchedData.TryAdd(ev.User.Username, stats)) {
                     log.Error($"Failed to insert {ev.User.Username} into watched list. Trying again on next chat message.");
                 }
@@ -74,7 +74,7 @@ namespace Statistics {
                 watchedData[ev.User.Username].AddMessageSent();
             }
             else {
-                var stats = UserStatEntry.GetByUserForToday(ev.User.UserId);
+                var stats = UserStatEntry.GetByUserForToday((int)ev.User.UserId);
                 stats.AddMessageSent();
                 if (!watchedData.TryAdd(ev.User.Username, stats)) {
                     log.Error($"Failed to insert {ev.User.Username} into watched list. Trying again on next chat message.");

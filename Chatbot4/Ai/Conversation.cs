@@ -47,7 +47,7 @@ namespace Chatbot4.Ai {
                 conversationRunning = true;
             }
             // we use this to make the bot forget it was spoken to in order to not drag a conversation along for hours.
-            if ((lastSpokenTo - DateTime.Now).Minutes > 2) {
+            if ((DateTime.Now - lastSpokenTo).Minutes > 2) {
                 conversationRunning = false;
             }
             lastSpokenTo = DateTime.Now;

@@ -133,7 +133,7 @@ CREATE INDEX author_version_idx ON plugins(plugin_name, plugin_author)";
         
         private void OnUpdateRequest(UpdateEvent ev) {
             var b = new SqliteUpdateQueryBuilder(ev);
-            ev.AffectedRows = this.Write(b.Build());
+            ev.AffectedRows = (int)this.Write(b.Build());
         }
         
         private void OnCreateTableRequest(CreateTableEvent ev) {

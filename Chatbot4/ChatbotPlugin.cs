@@ -12,7 +12,7 @@ namespace Chatbot4 {
         }
 
         public override void Enable(DependencyContainer diContainer) {
-            cfg = new ChatbotConfig();
+            cfg = ChatbotConfig.LoadConfig();
             dpp = new DefaultPlaceholderProvider(diContainer.Get<DamageBot.DamageBot>(), cfg);
             convos = new ConversationDispatcher(cfg);
         }

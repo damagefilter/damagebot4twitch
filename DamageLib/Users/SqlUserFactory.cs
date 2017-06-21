@@ -77,7 +77,7 @@ namespace DamageBot.Users {
         }
 
         private void OnUserRequest(RequestUserEvent ev) {
-            ev.ResolvedUser = GetUserByTwitchId(ev.Username, ev.TwitchId);
+            ev.ResolvedUser = GetUserByTwitchId(ev.TwitchId, ev.Username);
         }
         
         private void OnUserLeft(UserLeftEvent ev) {

@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
 
 namespace Chatbot4.Ai {
     
@@ -13,7 +15,7 @@ namespace Chatbot4.Ai {
         /// </summary>
         public int RequiredPrimaryMatches {
             get;
-            private set;
+            set;
         }
 
         /// <summary>
@@ -21,7 +23,7 @@ namespace Chatbot4.Ai {
         /// </summary>
         public int RequiredSecondaryMatches {
             get;
-            private set;
+            set;
         }
 
         /// <summary>
@@ -29,7 +31,7 @@ namespace Chatbot4.Ai {
         /// </summary>
         public int ResponseProbability {
             get;
-            private set;
+            set;
         }
 
         /// <summary>
@@ -38,7 +40,7 @@ namespace Chatbot4.Ai {
         /// </summary>
         public int RespondTime {
             get;
-            private set;
+            set;
         }
         
         /// <summary>
@@ -48,23 +50,25 @@ namespace Chatbot4.Ai {
         /// </summary>
         public bool CanIgnorePrimary {
             get;
-            private set;
+            set;
         }
 
         /// <summary>
         /// Context for which this node is applicable.
         /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
         public ResponseContext Context {
             get;
-            private set;
+            set;
         }
-        
+
         /// <summary>
         /// Describes the tone of the possible responses.
         /// </summary>
+        [JsonConverter(typeof(StringEnumConverter))]
         public Mood ResponseMood {
             get;
-            private set;
+            set;
         }
         
         public List<string> PrimaryWordPool {
@@ -79,7 +83,7 @@ namespace Chatbot4.Ai {
 
         public List<string> Answers {
             get;
-            private set;
+            set;
         }
         
         

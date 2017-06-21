@@ -83,7 +83,7 @@ namespace DamageBot {
         }
         private void OnJoinedChannel(object sender, OnUserJoinedArgs data) {
             tasks.Add(() => {
-                var user = GetUser(data.Username, data.Channel);
+                var user = GetUser(data.Username, null, data.Channel);
                 if (user == null) {
                     return;
                 }

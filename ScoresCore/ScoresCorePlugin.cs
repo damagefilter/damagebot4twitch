@@ -33,6 +33,7 @@ namespace ScoresCore {
             descriptor.Author = "damagefilter";
             descriptor.Version = "1.0";
             descriptor.Name = "Scores Core";
+            return descriptor;
         }
     }
 }
