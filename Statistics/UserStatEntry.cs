@@ -70,6 +70,7 @@ namespace Statistics {
             update.TableName = "user_statistics";
             update.DataList.Add("time_watching", timeWatched.Seconds + (this.statDate - DateTime.UtcNow).Seconds);
             update.DataList.Add("messages_sent", this.messagesSent);
+            update.WhereClause = $"user_id = '{this.userId}' and stat_date = date('{this.statDate:YYYY-MM-DD}'";
             update.Call();
         }
 
@@ -83,7 +84,7 @@ namespace Statistics {
             var select = new SelectEvent();
             select.TableList = "user_statistics";
             select.FieldList.Add("*");
-            select.WhereClause = $"user_id = {userId} and stat_date = date('{DateTime.UtcNow.ToString("YYYY-MM-DD")}')";
+            select.WhereClause = $"user_id = {userId} and stat_date = date('{DateTime.UtcNow:YYYY-MM-DD}')";
             select.Call();
 
             if (select.ReadNext()) {
