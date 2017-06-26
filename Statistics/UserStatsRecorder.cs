@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Concurrent;
 using System.Threading;
 using DamageBot.Database;
@@ -42,51 +43,52 @@ namespace Statistics {
         private void DumperTask(object state) {
             while (dumperRunning) {
                 // sleep a minute, then dump again.
-                Thread.Sleep(60000);
+                Thread.Sleep(5000);
                 Dump();
             }
         }
 
         private void Dump() {
-            dbCon.BeginTransaction();
+//            dbCon.BeginTransaction();
             try {
+                //FIXME: If we get a couple thousand records in here that's gonna get ugly
                 foreach (var stat in watchedData.Values) {
                     stat.Save();
                 }
-                dbCon.Commit();
+//                dbCon.Commit();
             }
-            catch {
-                dbCon.Rollback();
+            catch (Exception e){
+                log.Error("Failed to save a thing.", e);
             }
         }
 
         public void OnUserJoined(UserJoinedEvent ev) {
-            if (!watchedData.ContainsKey(ev.User.Username)) {
+            if (!watchedData.ContainsKey(ev.User.Name)) {
                 var stats = UserStatEntry.GetByUserForToday((int)ev.User.UserId);
-                if (!watchedData.TryAdd(ev.User.Username, stats)) {
-                    log.Error($"Failed to insert {ev.User.Username} into watched list. Trying again on next chat message.");
+                if (!watchedData.TryAdd(ev.User.Name, stats)) {
+                    log.Error($"Failed to insert {ev.User.Name} into watched list. Trying again on next chat message.");
                 }
             }
         }
 
         public void OnUserChat(MessageReceivedEvent ev) {
-            if (watchedData.ContainsKey(ev.User.Username)) {
-                watchedData[ev.User.Username].AddMessageSent();
+            if (watchedData.ContainsKey(ev.User.Name)) {
+                watchedData[ev.User.Name].AddMessageSent();
             }
             else {
                 var stats = UserStatEntry.GetByUserForToday((int)ev.User.UserId);
                 stats.AddMessageSent();
-                if (!watchedData.TryAdd(ev.User.Username, stats)) {
-                    log.Error($"Failed to insert {ev.User.Username} into watched list. Trying again on next chat message.");
+                if (!watchedData.TryAdd(ev.User.Name, stats)) {
+                    log.Error($"Failed to insert {ev.User.Name} into watched list. Trying again on next chat message.");
                 }
             }
         }
 
         public void OnUserLeft(UserLeftEvent ev) {
-            if (watchedData.ContainsKey(ev.User.Username)) {
+            if (watchedData.ContainsKey(ev.User.Name)) {
                 UserStatEntry entry;
-                if (!watchedData.TryRemove(ev.User.Username, out entry)) {
-                    log.Error($"Failed to remove {ev.User.Username} from watched list.");
+                if (!watchedData.TryRemove(ev.User.Name, out entry)) {
+                    log.Error($"Failed to remove {ev.User.Name} from watched list.");
                 }
                 else {
                     entry.Save();

@@ -1,6 +1,7 @@
 using System;
 using System.Runtime.InteropServices.ComTypes;
 using DamageBot.Events.Database;
+using DamageBot.Logging;
 
 namespace Statistics {
     /// <summary>
@@ -14,7 +15,7 @@ namespace Statistics {
 
         private DateTime statDate;
 
-        private TimeSpan timeWatched;
+        private TimeSpan startedWatching;
         
         private int messagesSent;
 
@@ -30,7 +31,7 @@ namespace Statistics {
             this.statId = statId;
             this.userId = userid;
             this.statDate = statDate;
-            this.timeWatched = TimeSpan.FromSeconds(timeWatched);
+            this.startedWatching = TimeSpan.FromSeconds(timeWatched);
             this.messagesSent = messagesSent;
         }
 
@@ -63,14 +64,16 @@ namespace Statistics {
             insert.DataList.Add("time_watching", (this.statDate - DateTime.UtcNow).Seconds);
             insert.DataList.Add("messages_sent", this.messagesSent);
             insert.Call();
+            this.statId = (int)insert.LastInsertId;
         }
 
         private void Update() {
+            Console.WriteLine("Update");
             var update = new UpdateEvent();
             update.TableName = "user_statistics";
-            update.DataList.Add("time_watching", timeWatched.Seconds + (this.statDate - DateTime.UtcNow).Seconds);
+            update.DataList.Add("time_watching", startedWatching.Seconds + (DateTime.UtcNow - this.statDate).Seconds);
             update.DataList.Add("messages_sent", this.messagesSent);
-            update.WhereClause = $"user_id = '{this.userId}' and stat_date = date('{this.statDate:YYYY-MM-DD}'";
+            update.WhereClause = $"id = {this.statId}";
             update.Call();
         }
 
@@ -88,7 +91,7 @@ namespace Statistics {
             select.Call();
 
             if (select.ReadNext()) {
-                // int statId, int userid, DateTime statDate, int timeWatched, int messagesSent
+                // int statId, int userid, DateTime statDate, int startedWatching, int messagesSent
                 return new UserStatEntry(
                     select.GetInteger("id"),
                     select.GetInteger("user_id"),
@@ -97,9 +100,7 @@ namespace Statistics {
                     select.GetInteger("messages_sent")
                 );
             }
-            else {
-                return new UserStatEntry(userId);
-            }
+            return new UserStatEntry(userId);
         }
     }
 }

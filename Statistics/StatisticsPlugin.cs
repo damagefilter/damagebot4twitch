@@ -1,5 +1,6 @@
 ﻿using DamageBot.Commands;
 using DamageBot.Di;
+using DamageBot.Events.Chat;
 using DamageBot.Events.Database;
 using DamageBot.Plugins;
 using DamageBot.Users;
@@ -69,6 +70,7 @@ namespace Statistics {
         )]
         public void StartStreamCommand(IMessageReceiver caller,  string[] args) {
             userRecorder.StartRecording();
+            new RequestChannelMessageEvent(caller.Status.Channel, "Recording started.").Call();
         }
         
         [Command(
