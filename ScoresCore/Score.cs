@@ -1,5 +1,5 @@
-﻿using System;
-using DamageBot.Events.Database;
+﻿using DamageBot.Events.Database;
+using DamageBot.Users;
 
 namespace ScoresCore {
     public class Score {
@@ -17,6 +17,23 @@ namespace ScoresCore {
             get;
             set;
         }
+
+        public static Score GetForUser(IUser user) {
+            var select = new SelectEvent();
+            select.TableList = "user_score";
+            select.FieldList.Add("*");
+            select.WhereClause = $"user_id = {user.UserId}";
+            select.Call();
+
+            if (select.ReadNext()) {
+                return new Score {
+                    Id = select.GetInteger("id"),
+                    UserId = select.GetInteger("user_id"),
+                    ScoreValue = select.GetInteger("score")
+                };
+            }
+            return new Score {UserId = (int)user.UserId};
+        }
         
         public void Save() {
             if (this.Id > 0) {
@@ -28,21 +45,19 @@ namespace ScoresCore {
         }
 
         private void Insert() {
-            //var insert = new InsertEvent();
-            //insert.TableName = "user_statistics";
-            //insert.DataList.Add("user_id", this.userId);
-            //insert.DataList.Add("stat_date", this.statDate);
-            //insert.DataList.Add("time_watching", (this.statDate - DateTime.UtcNow).Seconds);
-            //insert.DataList.Add("messages_sent", this.messagesSent);
-            //insert.Call();
+            var insert = new InsertEvent();
+            insert.TableName = "user_score";
+            insert.DataList.Add("user_id", this.UserId);
+            insert.DataList.Add("score", this.ScoreValue);
+            insert.Call();
         }
 
         private void Update() {
-            //var update = new UpdateEvent();
-            //update.TableName = "user_statistics";
-            //update.DataList.Add("time_watching", timeWatched.Seconds + (this.statDate - DateTime.UtcNow).Seconds);
-            //update.DataList.Add("messages_sent", this.messagesSent);
-            //update.Call();
+            var update = new UpdateEvent();
+            update.TableName = "user_score";
+            update.DataList.Add("score", this.ScoreValue);
+            update.WhereClause = $"id = {this.Id}";
+            update.Call();
         }
 
     }
