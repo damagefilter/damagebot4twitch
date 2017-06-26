@@ -76,19 +76,26 @@ CREATE INDEX author_version_idx ON plugins(plugin_name, plugin_author)";
         }
 
         public long Write(DbCommand command) {
-            command.Connection = connection;
-            if (this.transaction != null) {
-                command.Transaction = this.transaction;
+            try {
+                command.Connection = connection;
+                if (this.transaction != null) {
+                    command.Transaction = this.transaction;
+                }
+                long rows;
+                if (command.CommandText.ToLower().StartsWith("insert")) {
+                    command.ExecuteNonQuery();
+                    rows = (int)(this.connection as SQLiteConnection).LastInsertRowId;
+                }
+                else {
+                    rows = command.ExecuteNonQuery();
+                }
+                command.Dispose();
+                return rows;
             }
-            long rows;
-            if (command.CommandText.ToLower().StartsWith("insert")) {
-                rows = (int)(this.connection as SQLiteConnection).LastInsertRowId;
+            catch (Exception e) {
+                log.Error("Write operation failed. Query: " + command.CommandText, e);
+                throw;
             }
-            else {
-                rows = command.ExecuteNonQuery();
-            }
-            command.Dispose();
-            return rows;
         }
 
         public void BeginTransaction() {
@@ -208,7 +215,7 @@ CREATE INDEX author_version_idx ON plugins(plugin_name, plugin_author)";
             // quote everything so nothing goes derpshit
             var command = new SQLiteCommand();
             // prepare placeholders
-            string values = string.Join(", ", data.DataList.Keys.Select(c => $"c = @{c}"));
+            string values = string.Join(", ", data.DataList.Keys.Select(c => $"{c} = @{c}"));
             command.CommandText = $"update {data.TableName} set {values} where {data.WhereClause}";
             // fill placeholders
             foreach (var kvp in data.DataList) {

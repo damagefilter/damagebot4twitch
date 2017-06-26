@@ -115,7 +115,7 @@
     <Compile Include="Events\Database\SelectEvent.cs" />
     <Compile Include="Events\Database\UpdateEvent.cs" />
     <Compile Include="Events\Di\RequestDependencyEvent.cs" />
-    <Compile Include="Events\Users\RequestTwitchUserEvent.cs" />
+    <Compile Include="Events\Users\RequestAllUsersEvent.cs" />
     <Compile Include="Events\Users\RequestUserEvent.cs" />
     <Compile Include="Http\SimpleHttpServer.cs" />
     <Compile Include="Logging\Logger.cs" />

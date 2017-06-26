@@ -13,17 +13,18 @@ namespace DamageBot.Users {
     /// This is blocking. Possibly very long.
     /// So be aware of that.
     /// </summary>
+    [Obsolete("Unused until a use-case is found. Currently not functional / untested")]
     public class TwitchUserApi : IDisposable {
         private readonly Dictionary<string, User> nameToUserMap;
         private long cacheTimeout = 600;
 
         public TwitchUserApi() {
             nameToUserMap = new Dictionary<string, User>();
-            EventDispatcher.Instance.Register<RequestTwitchUserEvent>(OnUserRequested);
+//            EventDispatcher.Instance.Register<RequestTwitchUserEvent>(OnUserRequested);
         }
         
         public void Dispose() {
-            EventDispatcher.Instance.Unregister<RequestTwitchUserEvent>(OnUserRequested);
+//            EventDispatcher.Instance.Unregister<RequestTwitchUserEvent>(OnUserRequested);
         }
 
         /// <summary>
@@ -68,8 +69,8 @@ namespace DamageBot.Users {
             }
         }
 
-        private void OnUserRequested(RequestTwitchUserEvent ev) {
-            ev.ResolvedUser = this.GetUserByName(ev.UserName);
-        }
+//        private void OnUserRequested(RequestTwitchUserEvent ev) {
+//            ev.ResolvedUser = this.GetUserByName(ev.UserName);
+//        }
     }
 }

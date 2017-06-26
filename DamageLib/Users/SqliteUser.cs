@@ -4,7 +4,7 @@ using DamageBot.Events.Chat;
 namespace DamageBot.Users {
     
     public class SqliteUser : IUser {
-        public long UserId {
+        public int UserId {
             get;
             set;
         }
@@ -14,7 +14,7 @@ namespace DamageBot.Users {
             set;
         }
 
-        public string Username {
+        public string Name {
             get;
             set;
         }
@@ -35,7 +35,7 @@ namespace DamageBot.Users {
         }
 
         public SqliteUser(string userName) {
-            this.Username = userName;
+            this.Name = userName;
         }
 
         public void Message(string message) {

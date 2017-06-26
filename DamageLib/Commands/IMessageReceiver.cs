@@ -3,6 +3,9 @@ using DamageBot.Users;
 namespace DamageBot.Commands {
     public interface IMessageReceiver {
 
+        string Name {
+            get;
+        }
         /// <summary>
         /// Sends a message to this MessageReceiver.
         /// You may use unity multi markup thingamybobs

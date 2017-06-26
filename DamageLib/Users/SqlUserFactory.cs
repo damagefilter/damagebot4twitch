@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using DamageBot.Events.Chat;
 using DamageBot.Events.Database;
 using DamageBot.Events.Users;
@@ -13,6 +14,7 @@ namespace DamageBot.Users {
 
         public SqlUserFactory() {
             EventDispatcher.Instance.Register<RequestUserEvent>(OnUserRequest);
+            EventDispatcher.Instance.Register<RequestAllUsersEvent>(OnRequestAllUsers);
             EventDispatcher.Instance.Register<UserLeftEvent>(OnUserLeft);
         }
         
@@ -59,7 +61,7 @@ namespace DamageBot.Users {
                 // Check if we have this user but with a different name.
                 user.FirstJoined = DateTime.UtcNow;
                 user.LastJoined = DateTime.UtcNow;
-                user.Username = username;
+                user.Name = username;
                 user.TwitchId = twitchId;
                 
                 var insert = new InsertEvent();
@@ -69,7 +71,7 @@ namespace DamageBot.Users {
                 insert.DataList.Add("last_joined", user.LastJoined);
                 insert.DataList.Add("first_joined", user.FirstJoined);
                 insert.Call();
-                user.UserId = insert.LastInsertId;
+                user.UserId = (int)insert.LastInsertId;
                
                 userCache.Add(username, user);
                 return user;
@@ -79,6 +81,10 @@ namespace DamageBot.Users {
         private void OnUserRequest(RequestUserEvent ev) {
             ev.ResolvedUser = GetUserByTwitchId(ev.TwitchId, ev.Username);
         }
+
+        private void OnRequestAllUsers(RequestAllUsersEvent ev) {
+            ev.ResolvedUsers = this.userCache.Values.ToList();
+        }
         
         private void OnUserLeft(UserLeftEvent ev) {
             var update = new UpdateEvent();
@@ -86,6 +92,10 @@ namespace DamageBot.Users {
             update.DataList.Add("last_joined", ev.User.LastJoined);
             update.WhereClause = $"twitch_id = '{ev.User.TwitchId}'";
             update.Call();
+            try {
+                this.userCache.Remove(ev.User.Name);
+            }
+            catch {}
         }
         
     }

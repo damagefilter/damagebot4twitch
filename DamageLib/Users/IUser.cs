@@ -3,15 +3,15 @@ using DamageBot.Commands;
 
 namespace DamageBot.Users {
     public interface IUser : IMessageReceiver {
-        long UserId {
+        int UserId {
             get;
         }
         
         string TwitchId {
             get;
         }
-        
-        string Username {
+
+        new string Name {
             get;
         }
         

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using DamageBot.Commands;
 using DamageBot.Events.Chat;
 using DamageBot.Events.Users;
@@ -12,8 +13,6 @@ using TwitchLib.Models.Client;
 
 namespace DamageBot {
     public class DamageBot {
-        private BotConfig configuration;
-
         public TwitchClient TwitchIrcClient {
             get;
             set;
@@ -27,6 +26,11 @@ namespace DamageBot {
 
         public bool IsRunning => TwitchIrcClient.IsConnected;
 
+        public BotConfig Configuration {
+            get;
+            private set;
+        }
+
         /// <summary>
         /// </summary>
         /// <param name="cmds"></param>
@@ -37,17 +41,17 @@ namespace DamageBot {
         }
 
         public void SetConfiguration(BotConfig config) {
-            this.configuration = config;
+            this.Configuration = config;
         }
 
         public void PrepareTwitch() {
             log.Info("Setting up channel user");
-            var creds = new ConnectionCredentials(configuration.TwitchUsername, configuration.TwitchUserAuthKey);
-            this.TwitchIrcClient = new TwitchClient(creds, configuration.Channel);
+            var creds = new ConnectionCredentials(Configuration.TwitchUsername, Configuration.TwitchUserAuthKey);
+            this.TwitchIrcClient = new TwitchClient(creds, Configuration.Channel);
             
             log.Info("Preparing API Access.");
-            TwitchAPI.Settings.ClientId = configuration.ApplicationClientId;
-            TwitchAPI.Settings.AccessToken = configuration.ApiAuthKey;
+            TwitchAPI.Settings.ClientId = Configuration.ApplicationClientId;
+            TwitchAPI.Settings.AccessToken = Configuration.ApiAuthKey;
             
         }
 
@@ -77,7 +81,7 @@ namespace DamageBot {
             EventDispatcher.Instance.Register<RequestChannelMessageEvent>(OnChannelMessageRequest);
             EventDispatcher.Instance.Register<RequestWhisperMessageEvent>(OnWhisperMessageRequest);
         }
-        
+
         private void OnBotJoinedChannel(object sender, OnJoinedChannelArgs agrs) {
             this.TwitchIrcClient.SendMessage("I am here! Therefore I am!");
         }
@@ -142,7 +146,7 @@ namespace DamageBot {
         }
         
         private void OnWhisperMessageRequest(RequestWhisperMessageEvent ev) {
-            this.TwitchIrcClient.SendWhisper(ev.User.Username, ev.Message);
+            this.TwitchIrcClient.SendWhisper(ev.User.Name, ev.Message);
         }
 
         
