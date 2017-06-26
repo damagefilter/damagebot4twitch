@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Chatbot4.Ai;
+using DamageBot;
 using DamageBot.Events.Chat;
+using DamageBot.Events.Users;
 using DamageBot.EventSystem;
+using DamageBot.Logging;
 using DamageBot.Users;
 
 namespace Chatbot4 {
@@ -16,17 +20,27 @@ namespace Chatbot4 {
         private Dictionary<string, Conversation> conversations;
         private ResponsePool pool;
         private ChatbotConfig cfg;
+        private BotConfig mainCfg;
         private Conversation tickerConversation;
         private bool tickerIsRunning;
 
-        public ConversationDispatcher(ChatbotConfig cfg) {
+        private Logger log;
+
+        public ConversationDispatcher(ChatbotConfig cfg, BotConfig mainCfg) {
+            log = LogManager.GetLogger(GetType());
             this.conversations = new Dictionary<string, Conversation>();
             this.cfg = cfg;
+            this.mainCfg = mainCfg;
             this.pool = new ResponsePool(cfg);
-            this.tickerConversation = new Conversation(pool, cfg, null);
             EventDispatcher.Instance.Register<MessageReceivedEvent>(OnChatMessage);
             EventDispatcher.Instance.Register<UserJoinedEvent>(OnUserJoined);
             if (cfg.UseTicker) {
+                var user = new RequestUserEvent(mainCfg.TwitchUsername, null);
+                user.Call();
+                if (user.ResolvedUser == null) {
+                    log.Error("Cannot find default ticker message conversartion partner user thing.");
+                }
+                this.tickerConversation = new Conversation(pool, cfg, user.ResolvedUser);
                 StartTicker();
             }
         }
@@ -40,30 +54,29 @@ namespace Chatbot4 {
         }
 
         private void HandleMessageForContext(ResponseContext context, IUser user, string message) {
-            if (!conversations.ContainsKey(user.Username)) {
-                conversations.Add(user.Username, new Conversation(this.pool, this.cfg, user));
+            if (!conversations.ContainsKey(user.Name)) {
+                conversations.Add(user.Name, new Conversation(this.pool, this.cfg, user));
             }
-            conversations[user.Username].HandleMessage(message, context);
+            conversations[user.Name].HandleMessage(message, context);
         }
 
         public void StartTicker() {
             if (!tickerIsRunning) {
-                Task.Run(() => {
-                    DoTicker();
-                });
                 tickerIsRunning = true;
+                ThreadPool.QueueUserWorkItem((obj) => {
+                    Console.WriteLine("Starting message ticker.");
+                    while (tickerIsRunning) {
+                        Thread.Sleep(TimeSpan.FromMinutes(cfg.TickerDelay));
+                        Console.WriteLine("Sending ticker message");
+                        tickerConversation.SendResponse(pool.GetTickerNode());
+                    }
+                });
+                
             }
         }
-
         public void StopTicker() {
             this.tickerIsRunning = false;
         }
 
-        private async void DoTicker() {
-            while (tickerIsRunning) {
-                await Task.Delay(TimeSpan.FromSeconds(cfg.TickerDelay));
-                tickerConversation.SendResponse(pool.GetTickerNode());
-            }
-        }
     }
 }

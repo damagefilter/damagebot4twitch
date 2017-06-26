@@ -1,4 +1,5 @@
-﻿using DamageBot.Di;
+﻿using DamageBot;
+using DamageBot.Di;
 using DamageBot.Plugins;
 
 namespace Chatbot4 {
@@ -13,8 +14,9 @@ namespace Chatbot4 {
 
         public override void Enable(DependencyContainer diContainer) {
             cfg = ChatbotConfig.LoadConfig();
-            dpp = new DefaultPlaceholderProvider(diContainer.Get<DamageBot.DamageBot>(), cfg);
-            convos = new ConversationDispatcher(cfg);
+            var bot = diContainer.Get<DamageBot.DamageBot>();
+            dpp = new DefaultPlaceholderProvider(bot, cfg);
+            convos = new ConversationDispatcher(cfg, bot.Configuration);
         }
 
         public override void InstallRoutine() {

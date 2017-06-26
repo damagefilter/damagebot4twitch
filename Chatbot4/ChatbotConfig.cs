@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using Newtonsoft.Json;
@@ -7,7 +8,7 @@ namespace Chatbot4 {
         
         public bool DebugMode {
             get;
-            private set;
+            set;
         }
         
         /// <summary>
@@ -18,7 +19,7 @@ namespace Chatbot4 {
         /// </summary>
         public List<string> BotNicks {
             get;
-            private set;
+            set;
         }
         
         /// <summary>
@@ -26,7 +27,7 @@ namespace Chatbot4 {
         /// </summary>
         public bool UseTicker {
             get;
-            private set;
+            set;
         }
         
         /// <summary>
@@ -34,7 +35,7 @@ namespace Chatbot4 {
         /// </summary>
         public int TickerDelay {
             get;
-            private set;
+            set;
         }
         
         /// <summary>
@@ -42,7 +43,7 @@ namespace Chatbot4 {
         /// </summary>
         public string TimeFormat{
             get;
-            private set;
+            set;
         }
         
         /// <summary>
@@ -50,7 +51,7 @@ namespace Chatbot4 {
         /// </summary>
         public List<string> NegativeWords {
             get;
-            private set;
+            set;
         }
         
         /// <summary>
@@ -58,7 +59,7 @@ namespace Chatbot4 {
         /// </summary>
         public List<string> PositiveWords {
             get;
-            private set;
+            set;
         }
         
         public void Save() {
@@ -67,6 +68,7 @@ namespace Chatbot4 {
 
         public static ChatbotConfig LoadConfig() {
             if (File.Exists("chatbot_config.json")) {
+                Console.WriteLine("Reading charbot config form json");
                 var mod = JsonConvert.DeserializeObject<ChatbotConfig>(File.ReadAllText("chatbot_config.json"));
                 if (mod.NegativeWords == null) {
                     mod.NegativeWords = new List<string>();
@@ -82,6 +84,7 @@ namespace Chatbot4 {
                 return mod;
             }
             else {
+                Console.WriteLine("Config json not found. giving new chatbot cfg");
                 var mod = new ChatbotConfig();
                 mod.NegativeWords = new List<string>();
                 mod.PositiveWords = new List<string>();

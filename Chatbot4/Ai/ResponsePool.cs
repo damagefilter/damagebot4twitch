@@ -57,13 +57,13 @@ namespace Chatbot4.Ai {
                 var node = idealNodes[random.Next(0, idealNodes.Count - 1)];
                 var replacer = new ReplacePlaceholdersEvent(GetRandomAnswer(node.Answers));
                 replacer.Call();
-                return new ResponseInfo(user != null ? replacer.Text.Replace("{CURRENT_USER}", user.Username) : replacer.Text, node.ResponseProbability, node.RespondTime);
+                return new ResponseInfo(user != null ? replacer.Text.Replace("{CURRENT_USER}", user.Name) : replacer.Text, node.ResponseProbability, node.RespondTime);
             }
             if (defaultNodes.Count > 0) {
                 var node = defaultNodes[random.Next(0, idealNodes.Count - 1)];
                 var replacer = new ReplacePlaceholdersEvent(GetRandomAnswer(node.Answers));
                 replacer.Call();
-                return new ResponseInfo(user != null ? replacer.Text.Replace("{CURRENT_USER}", user.Username) : replacer.Text, node.ResponseProbability, node.RespondTime);
+                return new ResponseInfo(user != null ? replacer.Text.Replace("{CURRENT_USER}", user.Name) : replacer.Text, node.ResponseProbability, node.RespondTime);
             }
             return null;
         }
@@ -102,7 +102,7 @@ namespace Chatbot4.Ai {
                     if (node.RequiredSecondaryMatches <= this.CountMatches(userMessage, node.SecondaryWordPool)) {
                         var replacer = new ReplacePlaceholdersEvent(GetRandomAnswer(node.Answers));
                         replacer.Call();
-                        return new ResponseInfo(replacer.Text.Replace("{CURRENT_USER}", user.Username), node.ResponseProbability, node.RespondTime);
+                        return new ResponseInfo(replacer.Text.Replace("{CURRENT_USER}", user.Name), node.ResponseProbability, node.RespondTime);
                     }
                 }
             }
@@ -112,7 +112,7 @@ namespace Chatbot4.Ai {
                     if (node.RequiredSecondaryMatches <= this.CountMatches(userMessage, node.SecondaryWordPool)) {
                         var replacer = new ReplacePlaceholdersEvent(GetRandomAnswer(node.Answers));
                         replacer.Call();
-                        return new ResponseInfo(replacer.Text.Replace("{CURRENT_USER}", user.Username), node.ResponseProbability, node.RespondTime);
+                        return new ResponseInfo(replacer.Text.Replace("{CURRENT_USER}", user.Name), node.ResponseProbability, node.RespondTime);
                     }
                 }
             }
