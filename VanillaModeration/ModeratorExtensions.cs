@@ -16,7 +16,7 @@ namespace VanillaModeration {
         /// <param name="time"></param>
         /// <param name="message"></param>
         public static void TimeoutUser(this DamageBot.DamageBot bot, IUser user, TimeSpan time, string message = "") {
-            bot.TwitchIrcClient.TimeoutUser(user.Status.Channel, user.Username, time, message);
+            bot.TwitchIrcClient.TimeoutUser(user.Status.Channel, user.Name, time, message);
         }
         
         /// <summary>
@@ -26,7 +26,7 @@ namespace VanillaModeration {
         /// <param name="user"></param>
         /// <param name="message"></param>
         public static void BanUser(this DamageBot.DamageBot bot, IUser user, string message = "") {
-            bot.TwitchIrcClient.BanUser(user.Status.Channel, user.Username, message);
+            bot.TwitchIrcClient.BanUser(user.Status.Channel, user.Name, message);
         }
         
         /// <summary>
@@ -35,7 +35,7 @@ namespace VanillaModeration {
         /// <param name="bot"></param>
         /// <param name="user"></param>
         public static void UnbanUser(this DamageBot.DamageBot bot, IUser user) {
-            bot.TwitchIrcClient.UnbanUser(user.Username);
+            bot.TwitchIrcClient.UnbanUser(user.Name);
         }
 
         /// <summary>
@@ -49,7 +49,7 @@ namespace VanillaModeration {
             // Effectively purging the guys chat history.
             // By making the timeout 1 second it's basically like no timeout at all.
             // so effectively, just purge this users messages.
-            bot.TwitchIrcClient.TimeoutUser(user.Status.Channel, user.Username, TimeSpan.FromSeconds(1));
+            bot.TwitchIrcClient.TimeoutUser(user.Status.Channel, user.Name, TimeSpan.FromSeconds(1));
         }
     }
 }

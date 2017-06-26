@@ -28,43 +28,43 @@ namespace VanillaModeration {
         }
 
         public void OnUserJoined(UserJoinedEvent ev) {
-            if (!offenses.ContainsKey(ev.User.Username)) {
-                if (!offenses.TryAdd(ev.User.Username, 0)) {
-                    log.Error($"Failed to insert {ev.User.Username} into offenses watchlist. Trying again on next chat message.");
+            if (!offenses.ContainsKey(ev.User.Name)) {
+                if (!offenses.TryAdd(ev.User.Name, 0)) {
+                    log.Error($"Failed to insert {ev.User.Name} into offenses watchlist. Trying again on next chat message.");
                 }
             }
         }
 
         public void OnUserChat(MessageReceivedEvent ev) {
-            if (!offenses.ContainsKey(ev.User.Username)) {
-                if (!offenses.TryAdd(ev.User.Username, 0)) {
-                    log.Error($"Failed to insert {ev.User.Username} into offenses watchlist. Trying again on next chat message.");
+            if (!offenses.ContainsKey(ev.User.Name)) {
+                if (!offenses.TryAdd(ev.User.Name, 0)) {
+                    log.Error($"Failed to insert {ev.User.Name} into offenses watchlist. Trying again on next chat message.");
                     return;
                 }
             }
             if (CheckBadWords(ev.User, ev.Message) || CheckLinks(ev.User, ev.Message)) {
-                offenses[ev.User.Username]++;
-                int numOffenses = offenses[ev.User.Username];
+                offenses[ev.User.Name]++;
+                int numOffenses = offenses[ev.User.Name];
                 bot.ClearChatForUser(ev.User);
-                bot.TwitchIrcClient.SendMessage(ev.User.Status.Channel, $"{ev.User.Username}: That was a strike. You have {modCfg.OffenseThreshold - numOffenses} strikes before the Banhammer falls.");
+                bot.TwitchIrcClient.SendMessage(ev.User.Status.Channel, $"{ev.User.Name}: That was a strike. You have {modCfg.OffenseThreshold - numOffenses} strikes before the Banhammer falls.");
             }
-            if (offenses[ev.User.Username] >= modCfg.OffenseThreshold) {
+            if (offenses[ev.User.Name] >= modCfg.OffenseThreshold) {
                 if (modCfg.DefaultBanTime > 0) {
                     bot.BanUser(ev.User);
                 }
                 else {
                     bot.TimeoutUser(ev.User, TimeSpan.FromSeconds(modCfg.DefaultBanTime));
                 }
-                offenses[ev.User.Username] = 0;
-                bot.TwitchIrcClient.SendMessage(ev.User.Status.Channel, $"And the Banhammer came down on {ev.User.Username}");
+                offenses[ev.User.Name] = 0;
+                bot.TwitchIrcClient.SendMessage(ev.User.Status.Channel, $"And the Banhammer came down on {ev.User.Name}");
             }
         }
 
         public void OnUserLeft(UserLeftEvent ev) {
-            if (offenses.ContainsKey(ev.User.Username)) {
+            if (offenses.ContainsKey(ev.User.Name)) {
                 int entry;
-                if (!offenses.TryRemove(ev.User.Username, out entry)) {
-                    log.Error($"Failed to remove {ev.User.Username} from watched list.");
+                if (!offenses.TryRemove(ev.User.Name, out entry)) {
+                    log.Error($"Failed to remove {ev.User.Name} from watched list.");
                 }
             }
         }
