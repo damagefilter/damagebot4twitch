@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using DamageBot.Commands;
 using DamageBot.Events.Chat;
+using DamageBot.Events.Stream;
 using DamageBot.Events.Users;
 using DamageBot.EventSystem;
 using DamageBot.Logging;
@@ -9,6 +10,7 @@ using DamageBot.Tasking;
 using DamageBot.Users;
 using TwitchLib;
 using TwitchLib.Events.Client;
+using TwitchLib.Events.PubSub;
 using TwitchLib.Models.Client;
 
 namespace DamageBot {
@@ -23,6 +25,8 @@ namespace DamageBot {
         private readonly CommandManager cmds;
 
         private readonly Logger log;
+
+        private TwitchPubSub pubSub;
 
         public bool IsRunning => TwitchIrcClient.IsConnected;
 
@@ -52,7 +56,7 @@ namespace DamageBot {
             log.Info("Preparing API Access.");
             TwitchAPI.Settings.ClientId = Configuration.ApplicationClientId;
             TwitchAPI.Settings.AccessToken = Configuration.ApiAuthKey;
-            
+            this.pubSub = new TwitchPubSub();
         }
 
         public void Connect() {
@@ -78,10 +82,21 @@ namespace DamageBot {
             this.TwitchIrcClient.OnWhisperCommandReceived += OnWhisperCommand;
             this.TwitchIrcClient.OnUserLeft += OnUserLeftChannel;
 
+            this.pubSub.OnStreamUp += OnStreamStart;
+            this.pubSub.OnStreamDown += OnStreamEnd;
+
             EventDispatcher.Instance.Register<RequestChannelMessageEvent>(OnChannelMessageRequest);
             EventDispatcher.Instance.Register<RequestWhisperMessageEvent>(OnWhisperMessageRequest);
         }
 
+        private void OnStreamStart(object sender, OnStreamUpArgs data) {
+            new OnStreamStartEvent().Call();
+        }
+        
+        private void OnStreamEnd(object sender, OnStreamDownArgs data) {
+            new OnStreamStopEvent().Call();
+        }
+        
         private void OnBotJoinedChannel(object sender, OnJoinedChannelArgs agrs) {
             this.TwitchIrcClient.SendMessage("I am here! Therefore I am!");
         }

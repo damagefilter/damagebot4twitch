@@ -115,6 +115,8 @@
     <Compile Include="Events\Database\SelectEvent.cs" />
     <Compile Include="Events\Database\UpdateEvent.cs" />
     <Compile Include="Events\Di\RequestDependencyEvent.cs" />
+    <Compile Include="Events\Stream\OnStreamStartEvent.cs" />
+    <Compile Include="Events\Stream\OnStreamStopEvent.cs" />
     <Compile Include="Events\Users\RequestAllUsersEvent.cs" />
     <Compile Include="Events\Users\RequestUserEvent.cs" />
     <Compile Include="Http\SimpleHttpServer.cs" />
