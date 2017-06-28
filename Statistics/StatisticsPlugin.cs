@@ -1,9 +1,9 @@
 ﻿using DamageBot.Commands;
 using DamageBot.Di;
-using DamageBot.Events.Chat;
 using DamageBot.Events.Database;
+using DamageBot.Events.Stream;
+using DamageBot.EventSystem;
 using DamageBot.Plugins;
-using DamageBot.Users;
 
 namespace Statistics {
     
@@ -17,6 +17,14 @@ namespace Statistics {
             private set;
         }
 
+        private void OnStreamStart(OnStreamStartEvent ev) {
+            UserRecorder.StartRecording();
+        }
+        
+        private void OnStreamEnd(OnStreamStopEvent ev) {
+            UserRecorder.StopRecording();
+        }
+
         public override void InitResources(DependencyContainer diContainer) {
             diContainer.AddBinding(typeof(UserStatsRecorder), true);
         }
@@ -24,6 +32,8 @@ namespace Statistics {
         public override void Enable(DependencyContainer diContainer) {
             this.UserRecorder = diContainer.Get<UserStatsRecorder>();
             diContainer.Get<CommandManager>().RegisterCommandsInObject(new ControlCommands(this.UserRecorder), false);
+            EventDispatcher.Instance.Register<OnStreamStartEvent>(OnStreamStart);
+            EventDispatcher.Instance.Register<OnStreamStopEvent>(OnStreamEnd);
         }
 
         public override void InstallRoutine() {
@@ -62,25 +72,26 @@ namespace Statistics {
         public ControlCommands(UserStatsRecorder userRecorder) {
             this.userRecorder = userRecorder;
         }
-        [Command(
-            Aliases = new []{"startrec"}, 
-            Description = "Starts the recording of statistics for this session",
-            ToolTip = "!startrec",
-            RequiredElevation = Elevation.Broadcaster
-        )]
-        public void StartStreamCommand(IMessageReceiver caller,  string[] args) {
-            userRecorder.StartRecording();
-            new RequestChannelMessageEvent(caller.Status.Channel, "Recording started.").Call();
-        }
-        
-        [Command(
-            Aliases = new []{"stoprec"}, 
-            Description = "Stops the recording of statistics for this session manually.\nOtherwise stops when broadcaster leaves channel.",
-            ToolTip = "!stoprec",
-            RequiredElevation = Elevation.Broadcaster
-        )]
-        public void StopStreamCommand(IMessageReceiver caller,  string[] args) {
-            userRecorder.StopRecording();
-        }
+        // TODO: Commands to show how long one has been watching and all that stuff
+//        [Command(
+//            Aliases = new []{"startrec"}, 
+//            Description = "Starts the recording of statistics for this session",
+//            ToolTip = "!startrec",
+//            RequiredElevation = Elevation.Broadcaster
+//        )]
+//        public void StartStreamCommand(IMessageReceiver caller,  string[] args) {
+//            userRecorder.StartRecording();
+//            new RequestChannelMessageEvent(caller.Status.Channel, "Recording started.").Call();
+//        }
+//        
+//        [Command(
+//            Aliases = new []{"stoprec"}, 
+//            Description = "Stops the recording of statistics for this session manually.\nOtherwise stops when broadcaster leaves channel.",
+//            ToolTip = "!stoprec",
+//            RequiredElevation = Elevation.Broadcaster
+//        )]
+//        public void StopStreamCommand(IMessageReceiver caller,  string[] args) {
+//            userRecorder.StopRecording();
+//        }
     }
 }
