@@ -5,17 +5,21 @@ using DamageBot.Events.Chat;
 using DamageBot.Events.Database;
 using DamageBot.Events.Users;
 using DamageBot.EventSystem;
+using DamageBot.Logging;
 
 namespace DamageBot.Users {
     public class SqlUserFactory {
-
         private readonly Dictionary<string, IUser> userCache = new Dictionary<string, IUser>();
+        private readonly Logger log;
+        private readonly TwitchUserApi api;
 
 
-        public SqlUserFactory() {
+        public SqlUserFactory(TwitchUserApi api) {
+            log = LogManager.GetLogger(GetType());
             EventDispatcher.Instance.Register<RequestUserEvent>(OnUserRequest);
             EventDispatcher.Instance.Register<RequestAllUsersEvent>(OnRequestAllUsers);
             EventDispatcher.Instance.Register<UserLeftEvent>(OnUserLeft);
+            this.api = api;
         }
         
         public IUser GetUserByTwitchId(string twitchId, string username) {
@@ -29,11 +33,15 @@ namespace DamageBot.Users {
             select.TableList = "users";
             select.FieldList.Add("*");
             if (twitchId == null) {
-                twitchId = "INVALID"; // will never hit and query will go for the username which is also unique
+                log.Info("No twitch ID for user lookup. Attempting to find by user name.");
+                select.WhereClause = $"username = '{username}'";
             }
-            select.WhereClause = $"twitch_id = '{twitchId}' or username = '{username}'";
+            else {
+                log.Info("Using twitch ID for user lookup.");
+                select.WhereClause = $"twitch_id = '{twitchId}'";
+            }
+            
             select.Call();
-
             if (select.ResultSet.Read()) {
                 SqliteUser user = new SqliteUser(username) {
                     TwitchId = select.GetString("twitch_id"),
@@ -42,6 +50,7 @@ namespace DamageBot.Users {
                     LastJoined = select.GetDateTime("last_joined")
                 };
                 userCache.Add(username, user);
+                
                 if (username != select.GetString("username")) {
                     var update = new UpdateEvent();
                     update.TableName = "users";
@@ -52,18 +61,24 @@ namespace DamageBot.Users {
                 return user;
             }
             else {
+                log.Info("Nothing found. Trying to create new User.");
                 // new user!
                 SqliteUser user = new SqliteUser(username) {
                     FirstJoined = DateTime.UtcNow,
                     LastJoined = DateTime.UtcNow
                 };
+                if (twitchId == null) {
+                    // Get the ID from twitch.
+                    var twitchUser = api.GetUserByName(username);
+                    twitchId = twitchUser.Id;
+                }
                 user.TwitchId = twitchId;
                 // Check if we have this user but with a different name.
                 user.FirstJoined = DateTime.UtcNow;
                 user.LastJoined = DateTime.UtcNow;
                 user.Name = username;
                 user.TwitchId = twitchId;
-                
+
                 var insert = new InsertEvent();
                 insert.TableName = "users";
                 insert.DataList.Add("username", username);

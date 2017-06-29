@@ -13,7 +13,6 @@ namespace DamageBot.Users {
     /// This is blocking. Possibly very long.
     /// So be aware of that.
     /// </summary>
-    [Obsolete("Unused until a use-case is found. Currently not functional / untested")]
     public class TwitchUserApi : IDisposable {
         private readonly Dictionary<string, User> nameToUserMap;
         private long cacheTimeout = 600;
@@ -37,7 +36,7 @@ namespace DamageBot.Users {
                 return usr;
             }
             var usrs = TwitchAPI.Users.v5.GetUserByName(userName);
-            var user = usrs.Result.Matches.Length > 0 ? usrs.Result.Matches[0] : null;
+            var user = usrs.Result.Matches.Length != 0 ? usrs.Result.Matches[0] : null;
             if (user != null) {
                 UpdateNameCache(userName, user);
             }
