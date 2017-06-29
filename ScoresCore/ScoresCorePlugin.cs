@@ -61,6 +61,7 @@ namespace ScoresCore {
         )]
         public void ShowPoints(IMessageReceiver caller,  string[] args) {
             if (!(caller is IUser)) {
+                caller.Message("Only users can have points. You are not a user.");
                 return;
             }
             var score = userRecorder.GetScoreForUser((IUser)caller);
