@@ -1,10 +1,28 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
+using DamageBot.Commands;
 using DamageBot.Logging;
+using DamageBot.Users;
 
 namespace DamageBot {
 
-    
+    public class BotConsole : IMessageReceiver { 
+        public string Name => "Server";
+
+        public void Message(string message) {
+            Console.WriteLine(message);
+        }
+
+        public bool HasPermission(Elevation elevationLevel) {
+            return true;
+        }
+
+        public ChatStatus Status {
+            get;
+            set;
+        }
+    }
     internal class Program {
         public static void Main(string[] args) {
             LogManager.ConfigureLogger();
@@ -13,10 +31,23 @@ namespace DamageBot {
             if (string.IsNullOrEmpty(cfg.ApiAuthKey)) {
                 SetupProcess(cfg);
             }
-            var bot = new Bootstrapper(cfg).Bootstrap();
+            var bootstrapper = new Bootstrapper(cfg);
+            var bot = bootstrapper.Bootstrap();
+            var commands = bootstrapper.GetCommands();
             bot.Connect();
+            var console = new BotConsole();
+            var consoleChatStatus = new ChatStatus(Elevation.Broadcaster, cfg.Channel, true);
+            console.Status = consoleChatStatus;
             while (bot.IsRunning) {
-                Thread.Sleep(500);
+                //Thread.Sleep(500);
+                var line = Console.ReadLine();
+                if (string.IsNullOrEmpty(line)) {
+                    continue;
+                }
+                var commandAndArgs = line.Split(' ');
+                var cmd = commandAndArgs[0];
+                var cmdArgs = commandAndArgs.Skip(1).ToArray();
+                commands.ParseCommand(console, cmd, cmdArgs);
             }
         }
 
