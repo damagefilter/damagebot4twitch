@@ -33,12 +33,15 @@ namespace Chatbot4.Ai {
         }
 
         public void HandleMessage(string incomingMessage, ResponseContext context) {
+            var originalMood = this.currentMood;
             if (incomingMessage != null) {
-                EvaluateMood(incomingMessage);
+                this.currentMood = EvaluateMood(incomingMessage);
             }
             
             var node = responses.FindNode(currentMood, context, conversationRunning, incomingMessage, conversationPartner);
             if (node == null) {
+                // reset mood because this was likely not directed at the bot
+                this.currentMood = originalMood;
                 return;
             }
             if (!conversationRunning) {
@@ -63,18 +66,18 @@ namespace Chatbot4.Ai {
             }
         }
 
-        private void EvaluateMood(string message) {
+        private Mood EvaluateMood(string message) {
             int badMatches = -1 * CountMatches(message, botConfig.NegativeWords);
             int goodMatches = CountMatches(message, botConfig.PositiveWords);
             currentMoodValue += goodMatches + badMatches;
             if (currentMoodValue >= 35) {
-                currentMood = Mood.Good;
+                return Mood.Good;
             }
             else if (currentMoodValue <= -35) {
-                currentMood = Mood.Bad;
+                return Mood.Bad;
             }
             else {
-                currentMood = Mood.Normal;
+                return Mood.Normal;
             }
         }
         
