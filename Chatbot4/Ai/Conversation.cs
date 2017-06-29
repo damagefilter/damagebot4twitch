@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Threading.Tasks;
 using DamageBot.Events.Chat;
+using DamageBot.Logging;
 using DamageBot.Users;
 
 namespace Chatbot4.Ai {
@@ -12,6 +11,7 @@ namespace Chatbot4.Ai {
         private readonly ResponsePool responses;
         private readonly ChatbotConfig botConfig;
         private readonly IUser conversationPartner;
+        private readonly Logger log;
         
         private Mood currentMood; // last known mood of this conversation.
         private int currentMoodValue; // used to evaluate which mood should be set
@@ -19,19 +19,17 @@ namespace Chatbot4.Ai {
 
         private DateTime lastSpokenTo;
 
-        private Random random;
+        private readonly Random random;
         
         public Conversation(ResponsePool pool, ChatbotConfig cfg, IUser conversationPartner) {
+            log = LogManager.GetLogger(GetType());
             this.responses = pool;
             this.currentMood = Mood.Normal;
             botConfig = cfg;
             currentMoodValue = 0;
             this.conversationPartner = conversationPartner;
             this.random = new Random();
-        }
-
-        public void HandleTickerMessage() {
-            
+            this.lastSpokenTo = DateTime.MinValue;
         }
 
         public void HandleMessage(string incomingMessage, ResponseContext context) {
@@ -44,10 +42,12 @@ namespace Chatbot4.Ai {
                 return;
             }
             if (!conversationRunning) {
+                log.Info("Conversation with " + conversationPartner.Name + " is marked running.");
                 conversationRunning = true;
             }
             // we use this to make the bot forget it was spoken to in order to not drag a conversation along for hours.
-            if ((DateTime.Now - lastSpokenTo).Minutes > 2) {
+            if (lastSpokenTo != DateTime.MinValue && (DateTime.Now - lastSpokenTo).Minutes > 2) {
+                log.Info("Conversation with " + conversationPartner.Name + " has timed out. Minutes value is " + (DateTime.Now - lastSpokenTo).Minutes);
                 conversationRunning = false;
             }
             lastSpokenTo = DateTime.Now;
