@@ -1,17 +1,16 @@
 using System;
-using System.Collections.Generic;
 using DamageBot.Commands;
 using DamageBot.Events.Chat;
 using DamageBot.Events.Stream;
 using DamageBot.Events.Users;
 using DamageBot.EventSystem;
 using DamageBot.Logging;
-using DamageBot.Tasking;
 using DamageBot.Users;
 using TwitchLib;
 using TwitchLib.Events.Client;
 using TwitchLib.Events.PubSub;
 using TwitchLib.Models.Client;
+using System.Threading;
 
 namespace DamageBot {
     public class DamageBot {
@@ -19,9 +18,6 @@ namespace DamageBot {
             get;
             set;
         }
-
-        private readonly TaskQueue tasks;
-        
         private readonly CommandManager cmds;
 
         private readonly Logger log;
@@ -40,7 +36,6 @@ namespace DamageBot {
         /// <param name="cmds"></param>
         public DamageBot(CommandManager cmds) {
             log = LogManager.GetLogger(GetType());
-            this.tasks = new TaskQueue();
             this.cmds = cmds;
         }
 
@@ -62,15 +57,17 @@ namespace DamageBot {
         public void Connect() {
             log.Info("Connecting to IRC");
             this.TwitchIrcClient.Connect();
-            log.Info("Connected? " + this.TwitchIrcClient.IsConnected);
-            
-            this.tasks.StartPolling();
+            log.Info("Connecting to PubSub");
+            this.pubSub.Connect();
+            log.Info("Start task queue");
             log.Info("Ready. Lets roll.");
         }
 
         public void Disconnect() {
-            log.Info("Disconnecting bot.");
+            log.Info("Disconnecting from IRC.");
             this.TwitchIrcClient.Disconnect();
+            log.Info("Disconnecting from pubsub");
+            this.pubSub.Disconnect();
         }
         
         public void InitCallbacks() {
@@ -84,6 +81,7 @@ namespace DamageBot {
 
             this.pubSub.OnStreamUp += OnStreamStart;
             this.pubSub.OnStreamDown += OnStreamEnd;
+            this.pubSub.OnPubSubServiceConnected += (sender, args) => log.Info("Connected to PubSub");
 
             EventDispatcher.Instance.Register<RequestChannelMessageEvent>(OnChannelMessageRequest);
             EventDispatcher.Instance.Register<RequestWhisperMessageEvent>(OnWhisperMessageRequest);
@@ -101,7 +99,7 @@ namespace DamageBot {
             this.TwitchIrcClient.SendMessage("I am here! Therefore I am!");
         }
         private void OnJoinedChannel(object sender, OnUserJoinedArgs data) {
-            tasks.Add(() => {
+            AddToTaskQueue(() => {
                 var user = GetUser(data.Username, null, data.Channel);
                 if (user == null) {
                     return;
@@ -111,7 +109,7 @@ namespace DamageBot {
         }
         
         private void OnUserLeftChannel(object sender, OnUserLeftArgs data) {
-            tasks.Add(() => {
+            AddToTaskQueue(() => {
                 var user = GetUser(data.Username, null, data.Channel);
                 if (user == null) {
                     return;
@@ -121,11 +119,10 @@ namespace DamageBot {
         }
         
         private void OnMessageReceived(object sender, OnMessageReceivedArgs data) {
-            
             if (data.ChatMessage.Message.StartsWith("!")) {
                 return;
             }
-            tasks.Add(() => {
+            AddToTaskQueue(() => {
                 var user = GetUser(data.ChatMessage);
                 if (user == null) {
                     return;
@@ -136,7 +133,7 @@ namespace DamageBot {
         }
 
         private void OnChatCommand(object sender, OnChatCommandReceivedArgs data) {
-            tasks.Add(() => {
+            AddToTaskQueue(() => {
                 var user = GetUser(data.Command.ChatMessage);
                 if (user == null) {
                     return;
@@ -195,6 +192,12 @@ namespace DamageBot {
             }
             user.Status = new ChatStatus(Elevation.Viewer, channel, false);
             return user;
+        }
+
+        private static void AddToTaskQueue(Action action) {
+            ThreadPool.QueueUserWorkItem((obj) => {
+                action?.Invoke();
+            });
         }
     }
 }

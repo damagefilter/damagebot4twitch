@@ -77,6 +77,10 @@ namespace DamageBot {
             return diContainer.Get<DamageBot>();
         }
 
+        public CommandManager GetCommands() {
+            return diContainer.Get<CommandManager>();
+        }
+
         /// <summary>
         /// Runs through a series of calls to prepare all the stuff
         /// that is needed to run the bot and the plugins.
