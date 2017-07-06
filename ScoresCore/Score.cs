@@ -32,7 +32,7 @@ namespace ScoresCore {
                     ScoreValue = select.GetInteger("score")
                 };
             }
-            return new Score {UserId = (int)user.UserId};
+            return new Score {UserId = user.UserId};
         }
         
         public void Save() {

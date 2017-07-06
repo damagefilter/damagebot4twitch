@@ -1,7 +1,5 @@
 using System;
-using System.Runtime.InteropServices.ComTypes;
 using DamageBot.Events.Database;
-using DamageBot.Logging;
 
 namespace Statistics {
     /// <summary>
@@ -60,7 +58,7 @@ namespace Statistics {
             var insert = new InsertEvent();
             insert.TableName = "user_statistics";
             insert.DataList.Add("user_id", this.userId);
-            insert.DataList.Add("stat_date", this.statDate);
+            insert.DataList.Add("stat_date", $"{statDate:YYYY-MM-DD}");
             insert.DataList.Add("time_watching", (this.statDate - DateTime.UtcNow).Seconds);
             insert.DataList.Add("messages_sent", this.messagesSent);
             insert.Call();
@@ -68,7 +66,6 @@ namespace Statistics {
         }
 
         private void Update() {
-            Console.WriteLine("Update");
             var update = new UpdateEvent();
             update.TableName = "user_statistics";
             update.DataList.Add("time_watching", startedWatching.Seconds + (DateTime.UtcNow - this.statDate).Seconds);

@@ -34,6 +34,7 @@ namespace Statistics {
             diContainer.Get<CommandManager>().RegisterCommandsInObject(new ControlCommands(this.UserRecorder), false);
             EventDispatcher.Instance.Register<OnStreamStartEvent>(OnStreamStart);
             EventDispatcher.Instance.Register<OnStreamStopEvent>(OnStreamEnd);
+            this.UserRecorder.StartRecording();
         }
 
         public override void InstallRoutine() {
